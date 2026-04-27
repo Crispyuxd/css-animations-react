@@ -6,6 +6,7 @@ export interface MetaConfig {
   hold?: TimeValue;
   fadeOut?: TimeValue;
   pause?: TimeValue;
+  parallel?: boolean;
 }
 
 export interface CursorWaypoint {

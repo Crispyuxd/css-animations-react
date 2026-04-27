@@ -18,7 +18,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
 
   const pct = (ms: number) => (ms / cycleMs * 100).toFixed(1);
 
-  function emitMeta(m: { id: string; fadeIn?: string | number; hold?: string | number; fadeOut?: string | number; pause?: string | number }) {
+  function emitMeta(m: { id: string; fadeIn?: string | number; hold?: string | number; fadeOut?: string | number; pause?: string | number; parallel?: boolean }) {
     const fadeIn = parseMs(m.fadeIn || defaultMetaFadeIn);
     const hold = parseMs(m.hold || defaultMetaHold);
     const fadeOut = parseMs(m.fadeOut || defaultMetaFadeOut);
@@ -40,7 +40,12 @@ export function generateTimelineCSS(config: TimelineConfig): string {
 }`);
     }
     rules.push(`#${m.id} { animation: anim-${m.id} ${cycleStr} var(--ease-out-quart) infinite both; }`);
-    cursor += fadeIn + hold + fadeOut + parseMs(m.pause || '0s');
+    if (m.parallel) {
+      // Advance only through fadeIn so the next step starts after meta is fully visible
+      cursor += fadeIn;
+    } else {
+      cursor += fadeIn + hold + fadeOut + parseMs(m.pause || '0s');
+    }
   }
 
   for (const step of config.steps) {
@@ -144,8 +149,8 @@ export function generateTimelineCSS(config: TimelineConfig): string {
         if (wp.select) {
           const selTime = pct(c);
           rules.push(`@keyframes sel-${wp.select} {
-  0%, ${selTime}% { border-color: var(--border-subtle); border-width: 1px; }
-  ${pct(c + click)}%, 100% { border-color: var(--text-heading); border-width: 2px; }
+  0%, ${selTime}% { box-shadow: inset 0 0 0 1px var(--border-subtle); }
+  ${pct(c + click)}%, 100% { box-shadow: inset 0 0 0 2px var(--text-heading); }
 }`);
           rules.push(`#${wp.select} { animation: sel-${wp.select} ${cycleStr} linear infinite both; }`);
         }
@@ -167,8 +172,8 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       const dur = parseMs(step.duration || '0.15s');
       const endPct = pct(cursor + dur);
       rules.push(`@keyframes sel-${step.id} {
-  0%, ${startPct}% { border-color: var(--border-subtle); border-width: 1px; }
-  ${endPct}%, 100% { border-color: var(--text-heading); border-width: 2px; }
+  0%, ${startPct}% { box-shadow: inset 0 0 0 1px var(--border-subtle); }
+  ${endPct}%, 100% { box-shadow: inset 0 0 0 2px var(--text-heading); }
 }`);
       rules.push(`#${step.id} { animation: sel-${step.id} ${cycleStr} linear infinite both; }`);
       cursor += dur + parseMs(step.pause || '0s');
@@ -186,22 +191,22 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   0%, ${showInfo.startPct}% { opacity: 0; transform: translateY(8px); }
   ${showInfo.endPct}% { opacity: 1; transform: translateY(0); }
   ${startPct}% { opacity: 1; transform: translateY(0); }
-  ${endPct}%, 100% { opacity: 0; transform: translateY(0); }
+  ${endPct}%, 100% { opacity: 0; transform: translateY(-6px); }
 }`);
         // No need to push a new selector — the widget step already emitted #id { animation: show-id ... }
       } else {
         rules.push(`@keyframes hide-${step.hide} {
-  0%, ${startPct}% { opacity: 1; }
-  ${endPct}%, 100% { opacity: 0; }
+  0%, ${startPct}% { opacity: 1; transform: translateY(0); }
+  ${endPct}%, 100% { opacity: 0; transform: translateY(-6px); }
 }`);
-        rules.push(`#${step.hide} { animation: hide-${step.hide} ${cycleStr} ease infinite both; }`);
+        rules.push(`#${step.hide} { animation: hide-${step.hide} ${cycleStr} var(--ease-out-quart) infinite both; }`);
       }
 
       rules.push(`@keyframes show-${step.show} {
-  0%, ${startPct}% { opacity: 0; }
-  ${endPct}%, 100% { opacity: 1; }
+  0%, ${startPct}% { opacity: 0; transform: translateY(8px); }
+  ${endPct}%, 100% { opacity: 1; transform: translateY(0); }
 }`);
-      rules.push(`#${step.show} { animation: show-${step.show} ${cycleStr} ease infinite both; }`);
+      rules.push(`#${step.show} { animation: show-${step.show} ${cycleStr} var(--ease-out-quart) infinite both; }`);
       cursor += dur + parseMs(step.pause || '0s');
     }
   }

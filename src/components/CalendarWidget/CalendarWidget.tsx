@@ -24,7 +24,7 @@ export function CalendarWidget({ id, days, timeRows, children }: CalendarWidgetP
             </div>
           ))}
         </div>
-        <span className={`${styles.chevron} ${styles.chevronRight}`}><ChevronRight /></span>
+        <span className={styles.chevron}><ChevronRight /></span>
       </div>
       <div className={styles.divider} />
       <div className={styles.times}>
