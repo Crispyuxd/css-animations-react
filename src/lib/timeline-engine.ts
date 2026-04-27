@@ -14,7 +14,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   let cursor = introMs;
 
   // Track widget show times so transition can combine show+hide into one animation
-  const widgetShowTimes: Record<string, { startPct: string; endPct: string }> = {};
+  const widgetShowTimes: Record<string, { startPct: string; endPct: string; slideY: string }> = {};
 
   const pct = (ms: number) => (ms / cycleMs * 100).toFixed(1);
 
@@ -111,12 +111,13 @@ export function generateTimelineCSS(config: TimelineConfig): string {
     else if (step.type === 'widget') {
       const dur = parseMs(step.duration || '0.4s');
       const endPct = pct(cursor + dur);
+      const slideY = step.slideY || '8px';
       // Record show timing — if a transition later hides this widget,
       // it will generate a combined show+hide keyframe instead
-      widgetShowTimes[step.id] = { startPct, endPct };
+      widgetShowTimes[step.id] = { startPct, endPct, slideY };
       // Emit show animation (may be replaced by transition step)
       rules.push(`@keyframes show-${step.id} {
-  0%, ${startPct}% { opacity: 0; transform: translateY(8px); }
+  0%, ${startPct}% { opacity: 0; transform: translateY(${slideY}); }
   ${endPct}%, 100% { opacity: 1; transform: translateY(0); }
 }`);
       rules.push(`#${step.id} { animation: show-${step.id} ${cycleStr} var(--ease-out-quart) infinite both; }`);
@@ -140,11 +141,13 @@ export function generateTimelineCSS(config: TimelineConfig): string {
         const travel = parseMs(wp.travel || '0.5s');
         const click = parseMs(wp.click || '0.12s');
         const wpPause = parseMs(wp.pause || '0.2s');
+        const wx = wp.x ?? 0;
+        const wy = wp.y ?? 0;
 
         c += travel;
-        frames.push(`${pct(c)}% { opacity: 1; left: ${wp.x}px; top: ${wp.y}px; transform: scale(1); }`);
+        frames.push(`${pct(c)}% { opacity: 1; left: ${wx}px; top: ${wy}px; transform: scale(1); }`);
         c += click;
-        frames.push(`${pct(c)}% { opacity: 1; left: ${wp.x}px; top: ${wp.y}px; transform: scale(0.85); }`);
+        frames.push(`${pct(c)}% { opacity: 1; left: ${wx}px; top: ${wy}px; transform: scale(0.85); }`);
 
         if (wp.select) {
           const selTime = pct(c);
@@ -156,7 +159,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
         }
 
         c += click;
-        frames.push(`${pct(c)}% { opacity: 1; left: ${wp.x}px; top: ${wp.y}px; transform: scale(1); }`);
+        frames.push(`${pct(c)}% { opacity: 1; left: ${wx}px; top: ${wy}px; transform: scale(1); }`);
         c += wpPause;
       }
 
@@ -186,18 +189,19 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       // If hiding an element that was shown by a widget step,
       // replace its show animation with a combined show+hide
       const showInfo = widgetShowTimes[step.hide];
+      const slideOutY = step.slideOutY || '-6px';
       if (showInfo) {
         rules.push(`@keyframes show-${step.hide} {
-  0%, ${showInfo.startPct}% { opacity: 0; transform: translateY(8px); }
+  0%, ${showInfo.startPct}% { opacity: 0; transform: translateY(${showInfo.slideY}); }
   ${showInfo.endPct}% { opacity: 1; transform: translateY(0); }
   ${startPct}% { opacity: 1; transform: translateY(0); }
-  ${endPct}%, 100% { opacity: 0; transform: translateY(-6px); }
+  ${endPct}%, 100% { opacity: 0; transform: translateY(${slideOutY}); }
 }`);
         // No need to push a new selector — the widget step already emitted #id { animation: show-id ... }
       } else {
         rules.push(`@keyframes hide-${step.hide} {
   0%, ${startPct}% { opacity: 1; transform: translateY(0); }
-  ${endPct}%, 100% { opacity: 0; transform: translateY(-6px); }
+  ${endPct}%, 100% { opacity: 0; transform: translateY(${slideOutY}); }
 }`);
         rules.push(`#${step.hide} { animation: hide-${step.hide} ${cycleStr} var(--ease-out-quart) infinite both; }`);
       }

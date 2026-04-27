@@ -10,8 +10,9 @@ export interface MetaConfig {
 }
 
 export interface CursorWaypoint {
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
+  target?: string;     // Element id — useTimeline resolves to (x, y) at mount
   travel?: TimeValue;
   click?: TimeValue;
   pause?: TimeValue;
@@ -21,12 +22,12 @@ export interface CursorWaypoint {
 export type TimelineStep =
   | { type: 'bot'; id: string; duration?: TimeValue; pause?: TimeValue; lines?: number; meta?: MetaConfig }
   | { type: 'user'; id: string; duration?: TimeValue; pause?: TimeValue }
-  | { type: 'meta'; id: string; fadeIn?: TimeValue; hold?: TimeValue; fadeOut?: TimeValue; pause?: TimeValue }
+  | { type: 'meta'; id: string; fadeIn?: TimeValue; hold?: TimeValue; fadeOut?: TimeValue; pause?: TimeValue; parallel?: boolean }
   | { type: 'divider'; id: string; duration?: TimeValue; pause?: TimeValue }
-  | { type: 'widget'; id: string; duration?: TimeValue; pause?: TimeValue }
+  | { type: 'widget'; id: string; duration?: TimeValue; pause?: TimeValue; slideY?: string }
   | { type: 'cursor'; id: string; startX?: number; startY?: number; appear?: TimeValue; waypoints: CursorWaypoint[] }
   | { type: 'select'; id: string; duration?: TimeValue; pause?: TimeValue }
-  | { type: 'transition'; hide: string; show: string; duration?: TimeValue; pause?: TimeValue };
+  | { type: 'transition'; hide: string; show: string; duration?: TimeValue; pause?: TimeValue; slideOutY?: string };
 
 export interface TimelineConfig {
   cycle: TimeValue;
