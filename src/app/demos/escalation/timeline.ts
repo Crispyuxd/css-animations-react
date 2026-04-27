@@ -1,7 +1,7 @@
 import type { TimelineConfig } from '@/lib/types';
 
 export const timeline: TimelineConfig = {
-  cycle: '18s',
+  cycle: '22s',
   introHold: '0.54s',
   outroFade: '0.9s',
   metaFadeIn: '0.36s',
