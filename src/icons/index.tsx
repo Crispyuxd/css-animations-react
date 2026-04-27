@@ -85,6 +85,76 @@ export function CheckCircleIcon() {
   );
 }
 
+export function VisaLogo() {
+  return (
+    <svg width="21" height="16" viewBox="0 0 21 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="21" height="16" rx="2" fill="#1B39C3"/>
+      <path d="M9.59 5.43L8.06 10.57H7.05L5.96 6.61C5.9 6.39 5.85 6.31 5.68 6.22C5.4 6.08 4.94 5.95 4.54 5.87L4.57 5.71H6.18C6.39 5.71 6.58 5.85 6.62 6.09L7.18 9.05L8.59 5.71H9.59V5.43H9.59ZM13.32 8.89C13.33 7.92 11.98 7.86 11.99 7.43C11.99 7.3 12.12 7.16 12.39 7.12C12.53 7.11 12.9 7.09 13.32 7.28L13.49 6.5C13.27 6.42 12.99 6.34 12.64 6.34C11.7 6.34 11.04 6.84 11.04 7.55C11.03 8.08 11.51 8.37 11.87 8.55C12.24 8.73 12.37 8.84 12.37 9C12.37 9.24 12.08 9.34 11.81 9.35C11.34 9.36 11.07 9.22 10.85 9.12L10.68 9.92C10.9 10.02 11.31 10.11 11.74 10.11C12.74 10.11 13.39 9.62 13.39 8.86L13.32 8.89ZM15.79 10.57H16.66L15.9 5.71H15.1C14.92 5.71 14.77 5.81 14.7 5.97L13.27 10.57H14.27L14.47 9.99H15.69L15.79 10.57ZM14.74 9.21L15.24 7.79L15.53 9.21H14.74ZM10.93 5.71L10.14 10.57H9.18L9.97 5.71H10.93Z" fill="white"/>
+    </svg>
+  );
+}
+
+export function MinusIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M4.16669 10H15.8334" stroke="#09090B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+export function PlusIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M10 4.16669V15.8334M4.16669 10H15.8334" stroke="#09090B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+export function ChevronDown() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M4 6L8 10L12 6" stroke="#71717A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+export function CloseX() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M5 5L15 15M5 15L15 5" stroke="#09090B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+export function MoreHorizontal() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <circle cx="5" cy="10" r="1.25" fill="#FFFFFF"/>
+      <circle cx="10" cy="10" r="1.25" fill="#FFFFFF"/>
+      <circle cx="15" cy="10" r="1.25" fill="#FFFFFF"/>
+    </svg>
+  );
+}
+
+export function CancelClose() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M5.83 5.83L14.17 14.17M5.83 14.17L14.17 5.83" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+export function ShoppingCart() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M2.5 2.5H4.16667L6.5 13.3333H15.8333" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M6.5 10.8333H15.5L16.6667 5H5.16667" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="7.5" cy="16.25" r="0.833" fill="#FFFFFF"/>
+      <circle cx="14.5833" cy="16.25" r="0.833" fill="#FFFFFF"/>
+    </svg>
+  );
+}
+
 export function CursorPointer() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">

@@ -1,4 +1,5 @@
 .card {
+  position: relative;
   width: 406px;
   height: 732px;
   background: var(--bg-card);
