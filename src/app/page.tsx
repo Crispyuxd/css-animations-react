@@ -10,6 +10,9 @@ export default function Home() {
       <Link href="/demos/calendar" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
         Calendar
       </Link>
+      <Link href="/demos/shopify" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
+        Shopify
+      </Link>
     </div>
   );
 }

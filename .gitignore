@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# skill installations (npx skills add)
+.agents/
+.claude/skills/
+
+# local debug screenshots from Figma audits
+.figma-screenshot-*.png

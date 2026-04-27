@@ -1,0 +1,205 @@
+.widget {
+  position: relative;
+  width: 334px;
+  border: 2px solid rgba(0, 0, 0, 0.04);
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  opacity: 0;
+}
+
+.top {
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.heading {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: normal;
+  letter-spacing: -0.32px;
+  color: var(--text-heading);
+  margin: 0;
+}
+
+.divider {
+  height: 1px;
+  width: 100%;
+  background: var(--border-subtler);
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.lineLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.thumb {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border-subtler);
+  border-radius: 4px;
+  background: #ffffff;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.lineText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+
+.itemName {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.28px;
+  color: #27272a;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.itemSub {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: -0.28px;
+  color: #52525b;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.itemPrice {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: -0.28px;
+  color: #27272a;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.totalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.totalLabel,
+.totalValue {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: normal;
+  letter-spacing: -0.32px;
+  color: var(--text-heading);
+  margin: 0;
+}
+
+.bottom {
+  background: rgba(0, 0, 0, 0.04);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+.payRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.payLabel {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: -0.28px;
+  color: #52525b;
+  margin: 0;
+}
+
+.payRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.visa {
+  width: 21px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.payCard {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--text-heading);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.chev {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checkout {
+  position: relative;
+  width: 100%;
+  background: var(--bg-brand);
+  color: var(--text-inverse);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 24px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: inset 0 -2px 0 0 rgba(255, 255, 255, 0.16);
+}
