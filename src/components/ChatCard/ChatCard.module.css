@@ -1,0 +1,13 @@
+.card {
+  width: 406px;
+  height: 732px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtler);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}

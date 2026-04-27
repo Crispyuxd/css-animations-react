@@ -1,0 +1,12 @@
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+}
+.line { flex: 1; height: 1px; min-width: 1px; background: var(--connected-line); }
+.label { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.label span {
+  font-size: 12px; font-weight: 500; line-height: 1;
+  letter-spacing: -0.24px; color: var(--text-muted); white-space: nowrap;
+}

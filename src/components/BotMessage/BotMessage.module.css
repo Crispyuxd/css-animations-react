@@ -1,0 +1,17 @@
+.botBlock { position: relative; }
+.msg {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.28px;
+  color: var(--text-heading);
+  font-weight: 400;
+}
+.botMsg {
+  padding-right: 32px;
+  clip-path: inset(0 100% 0 0);
+}
+.twLine {
+  display: block;
+  clip-path: inset(0 100% 0 0);
+}

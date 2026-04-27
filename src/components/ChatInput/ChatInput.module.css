@@ -1,0 +1,26 @@
+.wrap { padding: 20px; flex-shrink: 0; }
+.input {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px 10px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-input);
+}
+.placeholder {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.28px;
+  color: var(--text-placeholder);
+}
+.icon { width: 20px; height: 20px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+.actions { display: inline-flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.sendBtn {
+  width: 32px; height: 32px; border-radius: 999px; background: var(--bg-brand);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
