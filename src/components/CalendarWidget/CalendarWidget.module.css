@@ -1,7 +1,7 @@
 .widget {
   position: relative;
   background: var(--bg-card);
-  border: 1px solid var(--border-subtler);
+  border: 2px solid var(--border-subtler);
   border-radius: 16px;
   display: flex;
   flex-direction: column;

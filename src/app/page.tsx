@@ -13,6 +13,15 @@ export default function Home() {
       <Link href="/demos/shopify" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
         Shopify
       </Link>
+      <Link href="/demos/slack" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
+        Slack
+      </Link>
+      <Link href="/demos/tavily" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
+        Tavily
+      </Link>
+      <Link href="/demos/custom-actions" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
+        Custom actions
+      </Link>
     </div>
   );
 }

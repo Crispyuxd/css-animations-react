@@ -12,9 +12,10 @@
   padding: 12px 16px;
   max-width: 100%;
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.5;
   letter-spacing: -0.28px;
   font-weight: 400;
   color: var(--text-heading);
+  white-space: nowrap;
 }
-.wrap { max-width: 305px; }
+.wrap { max-width: 305px; white-space: normal; }

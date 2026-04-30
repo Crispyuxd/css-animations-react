@@ -47,7 +47,9 @@ export default function CalendarDemo() {
                 <DemoCursor id="cursor" />
               </CalendarWidget>
             </div>
-            <MetaRow id="meta-cal" />
+            <div style={{ marginTop: 12 }}>
+              <MetaRow id="meta-cal" positioned={false} />
+            </div>
           </div>
 
           {/* State 2: bot text + call booked (overlays state-calendar) */}
@@ -65,7 +67,9 @@ export default function CalendarDemo() {
             <div style={{ marginTop: 12 }}>
               <CallBooked id="call-booked" date="26th March, 2026 at 3:30 PM" />
             </div>
-            <MetaRow id="meta-1" />
+            <div style={{ marginTop: 12 }}>
+              <MetaRow id="meta-1" positioned={false} />
+            </div>
           </div>
         </div>
       </MessagesStack>
