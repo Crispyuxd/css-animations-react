@@ -22,6 +22,15 @@ export default function Home() {
       <Link href="/demos/custom-actions" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
         Custom actions
       </Link>
+      <Link href="/demos/suggested-messages" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
+        Suggested messages
+      </Link>
+      <Link href="/demos/button" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
+        Button
+      </Link>
+      <Link href="/demos/forms" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
+        Forms
+      </Link>
     </div>
   );
 }
