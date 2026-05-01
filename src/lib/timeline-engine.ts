@@ -16,6 +16,20 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   // Track widget show times so transition can combine show+hide into one animation
   const widgetShowTimes: Record<string, { startPct: string; endPct: string; slideY: string }> = {};
 
+  // Aggregate multiple cursor steps with the same id into one keyframe
+  const cursorData: Record<string, { frames: string[]; lastX: number; lastY: number; initialized: boolean }> = {};
+
+  // Aggregate scroll steps per target — emit one keyframe with all stops
+  const scrollData: Record<string, { stops: Array<{ pct: string; ty: number }>; lastY: number }> = {};
+
+  // Aggregate selection (focus border) events per target — supports multiple
+  // select/deselect transitions so a field can be "focused" only while typing.
+  const selectionData: Record<string, Array<{ pct: string; selected: boolean }>> = {};
+
+  // Aggregate cursor-icon visibility (pointer vs text I-beam) per cursor id.
+  // Each waypoint with `mode: 'text'` swaps the inner icon at click time.
+  const cursorIconData: Record<string, Array<{ pct: string; opacity: number }>> = {};
+
   const pct = (ms: number) => (ms / cycleMs * 100).toFixed(1);
 
   function emitMeta(m: { id: string; fadeIn?: string | number; hold?: string | number; fadeOut?: string | number; pause?: string | number; parallel?: boolean }) {
@@ -52,34 +66,61 @@ export function generateTimelineCSS(config: TimelineConfig): string {
     const startPct = pct(cursor);
 
     if (step.type === 'bot') {
-      const dur = parseMs(step.duration || '1.26s');
-      const endPct = pct(cursor + dur);
-
-      if (step.lines && step.lines > 1) {
-        const lineDur = dur / step.lines;
+      // Per-line proportional typing: lines is number[] of char counts.
+      // Each line's duration = chars / cps so longer lines take longer at the
+      // same perceived speed. steps(N) where N = char count gives one tick
+      // per character.
+      if (Array.isArray(step.lines)) {
+        const cps = step.cps ?? 35;
+        const charCounts = step.lines;
         rules.push(`#${step.id} { clip-path: none; padding-right: 0; }`);
-        for (let i = 0; i < step.lines; i++) {
-          const ls = pct(cursor + lineDur * i);
-          const le = pct(cursor + lineDur * (i + 1));
+        let lineCursorMs = cursor;
+        for (let i = 0; i < charCounts.length; i++) {
+          const chars = Math.max(1, charCounts[i]);
+          const lineDurMs = (chars / cps) * 1000;
+          const ls = pct(lineCursorMs);
+          const le = pct(lineCursorMs + lineDurMs);
           const lineId = `${step.id}-line-${i + 1}`;
           rules.push(`@keyframes tw-${lineId} {
+  0% { clip-path: inset(0 100% 0 0); animation-timing-function: linear; }
+  ${ls}% { clip-path: inset(0 100% 0 0); animation-timing-function: steps(${chars}, end); }
+  ${le}%, 100% { clip-path: inset(0 0% 0 0); }
+}`);
+          rules.push(`#${lineId} { animation: tw-${lineId} ${cycleStr} infinite both; }`);
+          lineCursorMs += lineDurMs;
+        }
+        cursor = lineCursorMs + parseMs(step.pause || '0s');
+        if (step.meta) emitMeta(step.meta);
+      } else {
+        const dur = parseMs(step.duration || '1.26s');
+        const endPct = pct(cursor + dur);
+
+        if (step.lines && step.lines > 1) {
+          const lineDur = dur / step.lines;
+          rules.push(`#${step.id} { clip-path: none; padding-right: 0; }`);
+          for (let i = 0; i < step.lines; i++) {
+            const ls = pct(cursor + lineDur * i);
+            const le = pct(cursor + lineDur * (i + 1));
+            const lineId = `${step.id}-line-${i + 1}`;
+            rules.push(`@keyframes tw-${lineId} {
   0% { clip-path: inset(0 100% 0 0); animation-timing-function: linear; }
   ${ls}% { clip-path: inset(0 100% 0 0); animation-timing-function: steps(50, end); }
   ${le}%, 100% { clip-path: inset(0 0% 0 0); }
 }`);
-          rules.push(`#${lineId} { animation: tw-${lineId} ${cycleStr} infinite both; }`);
-        }
-      } else {
-        rules.push(`@keyframes tw-${step.id} {
+            rules.push(`#${lineId} { animation: tw-${lineId} ${cycleStr} infinite both; }`);
+          }
+        } else {
+          rules.push(`@keyframes tw-${step.id} {
   0% { clip-path: inset(0 100% 0 0); animation-timing-function: linear; }
   ${startPct}% { clip-path: inset(0 100% 0 0); animation-timing-function: steps(50, end); }
   ${endPct}%, 100% { clip-path: inset(0 0% 0 0); }
 }`);
-        rules.push(`#${step.id} { animation: tw-${step.id} ${cycleStr} infinite both; }`);
-      }
-      cursor += dur + parseMs(step.pause || '0s');
+          rules.push(`#${step.id} { animation: tw-${step.id} ${cycleStr} infinite both; }`);
+        }
+        cursor += dur + parseMs(step.pause || '0s');
 
-      if (step.meta) emitMeta(step.meta);
+        if (step.meta) emitMeta(step.meta);
+      }
     }
 
     else if (step.type === 'meta') {
@@ -126,16 +167,43 @@ export function generateTimelineCSS(config: TimelineConfig): string {
 
     else if (step.type === 'cursor') {
       const waypoints = step.waypoints;
-      const appear = parseMs(step.appear || '0.3s');
-      const startX = step.startX ?? ((waypoints[0]?.x ?? 0) + 60);
-      const startY = step.startY ?? ((waypoints[0]?.y ?? 0) + 40);
+      const id = step.id;
 
-      const frames: string[] = [];
+      // Lazily init aggregate for this cursor id
+      if (!cursorData[id]) {
+        cursorData[id] = { frames: [], lastX: 0, lastY: 0, initialized: false };
+      }
+      const data = cursorData[id];
+
+      // Reset cursor icon to default (pointer) BEFORE the cursor fades in,
+      // so it appears as a pointer regardless of what shape it was previously.
+      const pointerIconId = `${id}-pointer`;
+      const textIconId = `${id}-text`;
+      if (!cursorIconData[pointerIconId]) cursorIconData[pointerIconId] = [{ pct: '0%', opacity: 1 }];
+      if (!cursorIconData[textIconId]) cursorIconData[textIconId] = [{ pct: '0%', opacity: 0 }];
+      cursorIconData[pointerIconId].push({ pct: `${pct(cursor)}%`, opacity: 1 });
+      cursorIconData[textIconId].push({ pct: `${pct(cursor)}%`, opacity: 0 });
+
       let c = cursor;
 
-      frames.push(`0%, ${pct(c)}% { opacity: 0; left: ${startX}px; top: ${startY}px; transform: scale(1); }`);
-      c += appear;
-      frames.push(`${pct(c)}% { opacity: 1; left: ${startX}px; top: ${startY}px; transform: scale(1); }`);
+      if (!data.initialized) {
+        const appear = parseMs(step.appear || '0.3s');
+        const startX = step.startX ?? ((waypoints[0]?.x ?? 0) + 60);
+        const startY = step.startY ?? ((waypoints[0]?.y ?? 0) + 40);
+        data.frames.push(`0%, ${pct(c)}% { opacity: 0; left: ${startX}px; top: ${startY}px; transform: scale(1); }`);
+        c += appear;
+        data.frames.push(`${pct(c)}% { opacity: 1; left: ${startX}px; top: ${startY}px; transform: scale(1); }`);
+        data.lastX = startX;
+        data.lastY = startY;
+        data.initialized = true;
+      } else {
+        // Cursor was faded out at end of previous step. Hold hidden at last
+        // position, then fade back in for this step.
+        data.frames.push(`${pct(c)}% { opacity: 0; left: ${data.lastX}px; top: ${data.lastY}px; transform: scale(1); }`);
+        const appear = parseMs(step.appear || '0.18s');
+        c += appear;
+        data.frames.push(`${pct(c)}% { opacity: 1; left: ${data.lastX}px; top: ${data.lastY}px; transform: scale(1); }`);
+      }
 
       for (const wp of waypoints) {
         const travel = parseMs(wp.travel || '0.5s');
@@ -145,40 +213,72 @@ export function generateTimelineCSS(config: TimelineConfig): string {
         const wy = wp.y ?? 0;
 
         c += travel;
-        frames.push(`${pct(c)}% { opacity: 1; left: ${wx}px; top: ${wy}px; transform: scale(1); }`);
+        data.frames.push(`${pct(c)}% { opacity: 1; left: ${wx}px; top: ${wy}px; transform: scale(1); }`);
+        // At click moment, instantly swap icon if waypoint specifies a mode.
+        const mode = wp.mode || 'pointer';
+        const beforePct = pct(Math.max(c - 50, 0));
+        cursorIconData[pointerIconId].push({ pct: `${beforePct}%`, opacity: 1 });
+        cursorIconData[pointerIconId].push({ pct: `${pct(c)}%`, opacity: mode === 'text' ? 0 : 1 });
+        cursorIconData[textIconId].push({ pct: `${beforePct}%`, opacity: 0 });
+        cursorIconData[textIconId].push({ pct: `${pct(c)}%`, opacity: mode === 'text' ? 1 : 0 });
         c += click;
-        frames.push(`${pct(c)}% { opacity: 1; left: ${wx}px; top: ${wy}px; transform: scale(0.85); }`);
+        data.frames.push(`${pct(c)}% { opacity: 1; left: ${wx}px; top: ${wy}px; transform: scale(0.85); }`);
 
         if (wp.select) {
-          const selTime = pct(c);
-          rules.push(`@keyframes sel-${wp.select} {
-  0%, ${selTime}% { box-shadow: inset 0 0 0 1px var(--border-subtle); }
-  ${pct(c + click)}%, 100% { box-shadow: inset 0 0 0 2px var(--text-heading); }
-}`);
-          rules.push(`#${wp.select} { animation: sel-${wp.select} ${cycleStr} linear infinite both; }`);
+          // Record select-on. Aggregator emits one keyframe per target after
+          // the main loop, allowing later `deselect` steps to release focus.
+          if (!selectionData[wp.select]) selectionData[wp.select] = [{ pct: '0%', selected: false }];
+          selectionData[wp.select].push({ pct: `${pct(c)}%`, selected: false });
+          selectionData[wp.select].push({ pct: `${pct(c + click)}%`, selected: true });
         }
 
         c += click;
-        frames.push(`${pct(c)}% { opacity: 1; left: ${wx}px; top: ${wy}px; transform: scale(1); }`);
+        data.frames.push(`${pct(c)}% { opacity: 1; left: ${wx}px; top: ${wy}px; transform: scale(1); }`);
         c += wpPause;
+        data.lastX = wx;
+        data.lastY = wy;
       }
 
-      const last = waypoints[waypoints.length - 1];
-      frames.push(`100% { opacity: 1; left: ${last?.x ?? 0}px; top: ${last?.y ?? 0}px; transform: scale(1); }`);
+      // Fade cursor out at end of step so it disappears while the next thing
+      // (typing, attachment slide-in) happens. The next cursor step will fade
+      // it back in.
+      const disappear = parseMs('0.18s');
+      c += disappear;
+      data.frames.push(`${pct(c)}% { opacity: 0; left: ${data.lastX}px; top: ${data.lastY}px; transform: scale(1); }`);
 
-      rules.push(`@keyframes move-${step.id} {\n  ${frames.join('\n  ')}\n}`);
-      rules.push(`#${step.id} { animation: move-${step.id} ${cycleStr} var(--ease-out-quart) infinite both; }`);
       cursor = c;
+    }
+
+    else if (step.type === 'scroll') {
+      const id = step.target;
+      if (!scrollData[id]) {
+        scrollData[id] = { stops: [{ pct: '0%', ty: 0 }], lastY: 0 };
+      }
+      const data = scrollData[id];
+      const dur = parseMs(step.duration || '0.5s');
+      // Hold at previous Y up to step start, then animate to new Y.
+      // pct() returns a number string — append % so the keyframe selector is valid.
+      data.stops.push({ pct: `${pct(cursor)}%`, ty: data.lastY });
+      data.stops.push({ pct: `${pct(cursor + dur)}%`, ty: step.y });
+      data.lastY = step.y;
+      cursor += dur + parseMs(step.pause || '0s');
     }
 
     else if (step.type === 'select') {
       const dur = parseMs(step.duration || '0.15s');
       const endPct = pct(cursor + dur);
-      rules.push(`@keyframes sel-${step.id} {
-  0%, ${startPct}% { box-shadow: inset 0 0 0 1px var(--border-subtle); }
-  ${endPct}%, 100% { box-shadow: inset 0 0 0 2px var(--text-heading); }
-}`);
-      rules.push(`#${step.id} { animation: sel-${step.id} ${cycleStr} linear infinite both; }`);
+      if (!selectionData[step.id]) selectionData[step.id] = [{ pct: '0%', selected: false }];
+      selectionData[step.id].push({ pct: `${startPct}%`, selected: false });
+      selectionData[step.id].push({ pct: `${endPct}%`, selected: true });
+      cursor += dur + parseMs(step.pause || '0s');
+    }
+
+    else if (step.type === 'deselect') {
+      const dur = parseMs(step.duration || '0.2s');
+      const endPct = pct(cursor + dur);
+      if (!selectionData[step.target]) selectionData[step.target] = [{ pct: '0%', selected: false }];
+      selectionData[step.target].push({ pct: `${startPct}%`, selected: true });
+      selectionData[step.target].push({ pct: `${endPct}%`, selected: false });
       cursor += dur + parseMs(step.pause || '0s');
     }
 
@@ -213,6 +313,44 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       rules.push(`#${step.show} { animation: show-${step.show} ${cycleStr} var(--ease-out-quart) infinite both; }`);
       cursor += dur + parseMs(step.pause || '0s');
     }
+  }
+
+  // Emit aggregated cursor keyframes. Cursor steps end with opacity 0 (faded
+  // out), so the 100% stop matches that — no jump on cycle wrap.
+  for (const [id, data] of Object.entries(cursorData)) {
+    if (!data.initialized) continue;
+    data.frames.push(`100% { opacity: 0; left: ${data.lastX}px; top: ${data.lastY}px; transform: scale(1); }`);
+    rules.push(`@keyframes move-${id} {\n  ${data.frames.join('\n  ')}\n}`);
+    rules.push(`#${id} { animation: move-${id} ${cycleStr} var(--ease-out-quart) infinite both; }`);
+  }
+
+  // Emit aggregated scroll keyframes
+  for (const [id, data] of Object.entries(scrollData)) {
+    data.stops.push({ pct: '100%', ty: data.lastY });
+    const frameStrs = data.stops.map(s => `${s.pct} { transform: translateY(${s.ty}px); }`);
+    rules.push(`@keyframes scroll-${id} {\n  ${frameStrs.join('\n  ')}\n}`);
+    rules.push(`#${id} { animation: scroll-${id} ${cycleStr} var(--ease-scroll) infinite both; }`);
+  }
+
+  // Emit aggregated cursor-icon keyframes — pointer ↔ text I-beam swap.
+  for (const [id, stops] of Object.entries(cursorIconData)) {
+    const last = stops[stops.length - 1];
+    stops.push({ pct: '100%', opacity: last.opacity });
+    const frameStrs = stops.map(s => `${s.pct} { opacity: ${s.opacity}; }`);
+    rules.push(`@keyframes ico-${id} {\n  ${frameStrs.join('\n  ')}\n}`);
+    rules.push(`#${id} { animation: ico-${id} ${cycleStr} linear infinite both; }`);
+  }
+
+  // Emit aggregated selection (focus border) keyframes — fields turn dark
+  // when selected via cursor click, return to subtle when deselected.
+  const onShadow = 'inset 0 0 0 2px var(--text-heading)';
+  const offShadow = 'inset 0 0 0 1px var(--border-subtle)';
+  for (const [id, stops] of Object.entries(selectionData)) {
+    const last = stops[stops.length - 1];
+    stops.push({ pct: '100%', selected: last.selected });
+    const frameStrs = stops.map(s => `${s.pct} { box-shadow: ${s.selected ? onShadow : offShadow}; }`);
+    rules.push(`@keyframes sel-${id} {\n  ${frameStrs.join('\n  ')}\n}`);
+    rules.push(`#${id} { animation: sel-${id} ${cycleStr} linear infinite both; }`);
   }
 
   // stackFadeCycle

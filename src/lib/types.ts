@@ -17,17 +17,20 @@ export interface CursorWaypoint {
   click?: TimeValue;
   pause?: TimeValue;
   select?: string;
+  mode?: 'pointer' | 'text';  // cursor shape on click — defaults to 'pointer'
 }
 
 export type TimelineStep =
-  | { type: 'bot'; id: string; duration?: TimeValue; pause?: TimeValue; lines?: number; meta?: MetaConfig }
+  | { type: 'bot'; id: string; duration?: TimeValue; pause?: TimeValue; lines?: number | number[]; cps?: number; meta?: MetaConfig }
   | { type: 'user'; id: string; duration?: TimeValue; pause?: TimeValue }
   | { type: 'meta'; id: string; fadeIn?: TimeValue; hold?: TimeValue; fadeOut?: TimeValue; pause?: TimeValue; parallel?: boolean }
   | { type: 'divider'; id: string; duration?: TimeValue; pause?: TimeValue }
   | { type: 'widget'; id: string; duration?: TimeValue; pause?: TimeValue; slideY?: string }
   | { type: 'cursor'; id: string; startX?: number; startY?: number; appear?: TimeValue; waypoints: CursorWaypoint[] }
   | { type: 'select'; id: string; duration?: TimeValue; pause?: TimeValue }
-  | { type: 'transition'; hide: string; show: string; duration?: TimeValue; pause?: TimeValue; slideOutY?: string };
+  | { type: 'transition'; hide: string; show: string; duration?: TimeValue; pause?: TimeValue; slideOutY?: string }
+  | { type: 'scroll'; target: string; y: number; duration?: TimeValue; pause?: TimeValue }
+  | { type: 'deselect'; target: string; duration?: TimeValue; pause?: TimeValue };
 
 export interface TimelineConfig {
   cycle: TimeValue;

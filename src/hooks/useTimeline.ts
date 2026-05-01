@@ -4,11 +4,11 @@ import { useEffect, useRef } from 'react';
 import { generateTimelineCSS } from '@/lib/timeline-engine';
 import type { TimelineConfig } from '@/lib/types';
 
-// Cursor SVG hotspot (the visible pointer tip) is roughly (4, 2) inside
-// the 20x20 cursor div. Subtract this when targeting an element so the
-// click point lands on the element center.
-const CURSOR_HOTSPOT_X = 4;
-const CURSOR_HOTSPOT_Y = 2;
+// Cursor SVG hotspot (the index-finger tip of the pointing hand) is roughly
+// (7, 1) inside the 20x20 cursor div. Subtract this when targeting an element
+// so the click point lands on the element center.
+const CURSOR_HOTSPOT_X = 7;
+const CURSOR_HOTSPOT_Y = 1;
 
 export function useTimeline(config: TimelineConfig): void {
   const styleRef = useRef<HTMLStyleElement | null>(null);
