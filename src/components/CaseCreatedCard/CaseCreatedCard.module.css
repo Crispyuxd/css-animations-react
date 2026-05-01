@@ -1,0 +1,37 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg-card);
+  border: 2px solid rgba(0, 0, 0, 0.04);
+  border-radius: 20px;
+  width: 100%;
+  align-self: stretch;
+}
+.icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.28px;
+  color: var(--text-heading);
+}
+.caseId {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.43;
+  letter-spacing: -0.28px;
+  color: var(--text-paragraph-3);
+}

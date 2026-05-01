@@ -1,0 +1,43 @@
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.28px;
+  color: var(--text-paragraph-3);
+  padding: 0 2px;
+}
+.field {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.placeholder,
+.value {
+  grid-row: 1;
+  grid-column: 1;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.28px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+.placeholder { color: var(--text-placeholder); }
+.value {
+  color: var(--text-heading);
+  clip-path: inset(0 100% 0 0);
+}

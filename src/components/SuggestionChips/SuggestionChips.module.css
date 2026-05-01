@@ -1,0 +1,51 @@
+.wrap {
+  position: relative;
+  padding: 20px 20px 0;
+  flex-shrink: 0;
+}
+.overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 92px;
+  opacity: 0;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.chip {
+  appearance: none;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  cursor: default;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.chip:has(.icon) {
+  gap: 6px;
+}
+.icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.28px;
+  color: var(--text-heading);
+}
