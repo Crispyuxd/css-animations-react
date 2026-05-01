@@ -1,4 +1,5 @@
 .botBlock { position: relative; }
+.slot { margin-top: 12px; }
 .msg {
   margin: 0;
   font-size: 14px;
@@ -14,4 +15,14 @@
 .twLine {
   display: block;
   clip-path: inset(0 100% 0 0);
+}
+.bulletLine {
+  display: grid;
+  grid-template-columns: 21px 1fr;
+}
+.bulletMarker {
+  user-select: none;
+}
+.indentLine {
+  padding-left: 21px;
 }

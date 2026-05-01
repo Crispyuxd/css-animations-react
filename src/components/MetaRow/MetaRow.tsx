@@ -6,11 +6,14 @@ interface MetaRowProps {
   author?: string;
   timestamp?: string;
   positioned?: boolean;
+  gap?: number;
 }
 
-export function MetaRow({ id, author, timestamp = 'Just now', positioned = true }: MetaRowProps) {
+export function MetaRow({ id, author, timestamp = 'Just now', positioned = true, gap }: MetaRowProps) {
   return (
-    <div id={id} className={`${styles.meta} ${positioned ? styles.positioned : ''}`}>
+    <div id={id}
+         className={`${styles.meta} ${positioned ? styles.positioned : ''}`}
+         style={gap !== undefined ? { marginTop: gap } : undefined}>
       {author ? (
         <span className={styles.authorGroup}>
           <span className={styles.author}>{author}</span>

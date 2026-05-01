@@ -7,3 +7,11 @@
   opacity: 0;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
+.icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+}
+.icon { opacity: 1; }
+.iconText { opacity: 0; }
