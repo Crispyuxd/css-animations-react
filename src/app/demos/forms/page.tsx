@@ -22,12 +22,16 @@ export default function FormsDemo() {
 
   return (
     <>
+      <style>{`
+        #field-msg-value { height: auto; }
+        #msg-value { letter-spacing: -0.5px; }
+      `}</style>
       <ChatCard>
         <ChatHeader />
         <MessagesStack gap={20}>
           <div
             id="forms-scroll"
-            style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'stretch', width: '100%' }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'stretch', width: 366 }}
           >
             <BotMessage id="bot-1" meta={<MetaRow id="meta-0" />}>
               Hey, how can I help?
