@@ -15,19 +15,16 @@ export default function ButtonDemo() {
       <ChatCard>
         <ChatHeader />
         <MessagesStack gap={20}>
-          <BotMessage id="bot-1" meta={<MetaRow id="meta-0" />}>
-            Hey, how can I help?
-          </BotMessage>
+          <BotMessage id="bot-1" lines={['Hey, how can I help?']} meta={<MetaRow id="meta-0" />} />
 
           <UserMessage id="user-1">Can you redirect me to pricing page?</UserMessage>
 
           <BotMessage
             id="bot-2"
+            lines={['Sure, please click on this button:']}
             slot={<CTAButton id="btn-pricing">Visit our pricing page</CTAButton>}
             meta={<MetaRow id="meta-1" gap={12} />}
-          >
-            Sure, please click on this button:
-          </BotMessage>
+          />
         </MessagesStack>
         <ChatInput />
       </ChatCard>

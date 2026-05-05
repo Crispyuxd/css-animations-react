@@ -11,7 +11,7 @@ export const timeline: TimelineConfig = {
     // Bot greets — typewriter, then "Just now" timestamp fades in (parallel
     // so chips can slide in alongside it instead of waiting for the full
     // hold + fadeOut cycle).
-    { type: 'bot', id: 'bot-1', duration: '1.26s', pause: '0.36s',
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s',
       meta: { id: 'meta-0', parallel: true } },
 
     // Suggestion chips slide in just after the timestamp registers
@@ -33,7 +33,7 @@ export const timeline: TimelineConfig = {
     // Bot replies — 12 visual lines at 1.26s/line (legacy 50-step typewriter,
     // exactly matches Tavily / Custom-actions / Calendar pacing). Each visual
     // line is its own span so no two ever animate in parallel.
-    { type: 'bot', id: 'bot-2', duration: '15.12s', lines: 12, pause: '0.36s' },
+    { type: 'bot', id: 'bot-2', lines: [20, 50, 12, 46, 25, 49, 23, 48, 17, 58, 56, 28], pause: '0.36s' },
     { type: 'meta', id: 'meta-1', fadeIn: '0.36s', hold: '0s', fadeOut: '0s', parallel: true },
 
     // Chips return so the loop reads as a fresh prompt opportunity

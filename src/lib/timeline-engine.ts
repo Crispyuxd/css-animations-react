@@ -8,7 +8,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   const outroMs = parseMs(config.outroFade || '0.9s');
   const defaultMetaFadeIn = config.metaFadeIn || '0.36s';
   const defaultMetaHold = config.metaHold || '0.9s';
-  const defaultMetaFadeOut = config.metaFadeOut || '0.36s';
+  const defaultMetaFadeOut = config.metaFadeOut || '0.15s';
 
   const rules: string[] = [];
   let cursor = introMs;
@@ -58,7 +58,10 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       // Advance only through fadeIn so the next step starts after meta is fully visible
       cursor += fadeIn;
     } else {
-      cursor += fadeIn + hold + fadeOut + parseMs(m.pause || '0s');
+      // Advance through fadeIn + hold so meta's fadeOut overlaps with whatever
+      // comes next (e.g. user message pop). The fadeOut still occurs at its
+      // absolute time in the keyframe, but the next step starts in parallel.
+      cursor += fadeIn + hold + parseMs(m.pause || '0s');
     }
   }
 
@@ -71,13 +74,15 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       // same perceived speed. steps(N) where N = char count gives one tick
       // per character.
       if (Array.isArray(step.lines)) {
-        const cps = step.cps ?? 35;
+        const baseCps = step.cps ?? 45;
+        const accel = step.accel ?? 0.8;
         const charCounts = step.lines;
         rules.push(`#${step.id} { clip-path: none; padding-right: 0; }`);
         let lineCursorMs = cursor;
         for (let i = 0; i < charCounts.length; i++) {
           const chars = Math.max(1, charCounts[i]);
-          const lineDurMs = (chars / cps) * 1000;
+          const lineCps = baseCps * Math.pow(accel, i);
+          const lineDurMs = (chars / lineCps) * 1000;
           const ls = pct(lineCursorMs);
           const le = pct(lineCursorMs + lineDurMs);
           const lineId = `${step.id}-line-${i + 1}`;
@@ -89,8 +94,9 @@ export function generateTimelineCSS(config: TimelineConfig): string {
           rules.push(`#${lineId} { animation: tw-${lineId} ${cycleStr} infinite both; }`);
           lineCursorMs += lineDurMs;
         }
-        cursor = lineCursorMs + parseMs(step.pause || '0s');
+        cursor = lineCursorMs;
         if (step.meta) emitMeta(step.meta);
+        cursor += parseMs(step.pause || '0s');
       } else {
         const dur = parseMs(step.duration || '1.26s');
         const endPct = pct(cursor + dur);
@@ -117,9 +123,9 @@ export function generateTimelineCSS(config: TimelineConfig): string {
 }`);
           rules.push(`#${step.id} { animation: tw-${step.id} ${cycleStr} infinite both; }`);
         }
-        cursor += dur + parseMs(step.pause || '0s');
-
+        cursor += dur;
         if (step.meta) emitMeta(step.meta);
+        cursor += parseMs(step.pause || '0s');
       }
     }
 
@@ -128,7 +134,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
     }
 
     else if (step.type === 'user') {
-      const dur = parseMs(step.duration || '0.54s');
+      const dur = parseMs(step.duration || '0.3s');
       const endPct = pct(cursor + dur);
       rules.push(`@keyframes pop-${step.id} {
   0%, ${startPct}% { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.85); }
@@ -156,11 +162,23 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       // Record show timing — if a transition later hides this widget,
       // it will generate a combined show+hide keyframe instead
       widgetShowTimes[step.id] = { startPct, endPct, slideY };
-      // Emit show animation (may be replaced by transition step)
-      rules.push(`@keyframes show-${step.id} {
+      // Emit show animation (may be replaced by transition step).
+      // `collapse` makes the element take 0 layout space pre-show by animating
+      // height (0 → given) and margin-top (negative parent-gap → 0) alongside
+      // opacity/translateY, so flex-gap doesn't reserve space for it.
+      if (step.collapse) {
+        const toH = step.collapse.height;
+        const fromMT = step.collapse.marginTop || '0';
+        rules.push(`@keyframes show-${step.id} {
+  0%, ${startPct}% { opacity: 0; transform: translateY(${slideY}); height: 0; margin-top: ${fromMT}; overflow: hidden; }
+  ${endPct}%, 100% { opacity: 1; transform: translateY(0); height: ${toH}; margin-top: 0; overflow: visible; }
+}`);
+      } else {
+        rules.push(`@keyframes show-${step.id} {
   0%, ${startPct}% { opacity: 0; transform: translateY(${slideY}); }
   ${endPct}%, 100% { opacity: 1; transform: translateY(0); }
 }`);
+      }
       rules.push(`#${step.id} { animation: show-${step.id} ${cycleStr} var(--ease-out-quart) infinite both; }`);
       cursor += dur + parseMs(step.pause || '0s');
     }
