@@ -12,9 +12,22 @@
   padding-right: 32px;
   clip-path: inset(0 100% 0 0);
 }
+.botMsgWords {
+  padding-right: 32px;
+}
 .twLine {
   display: block;
   clip-path: inset(0 100% 0 0);
+}
+.wordLine {
+  display: block;
+}
+.word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(3px);
+  filter: blur(2px);
+  will-change: opacity, transform, filter;
 }
 .bulletLine {
   display: grid;

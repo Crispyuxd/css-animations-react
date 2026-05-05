@@ -4,6 +4,7 @@ export function CTAButton({ id, block, children }: { id?: string; block?: boolea
   return (
     <button id={id} type="button" className={`${styles.btn} ${block ? styles.block : ''}`}>
       <span className={styles.label}>{children}</span>
+      <span data-ring className={styles.ring} aria-hidden="true" />
     </button>
   );
 }

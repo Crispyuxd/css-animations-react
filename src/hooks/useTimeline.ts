@@ -54,6 +54,14 @@ function resolveCursorTargets(config: TimelineConfig): TimelineConfig {
   return {
     ...config,
     steps: config.steps.map((step) => {
+      // Bot in word mode: count [data-word] elements once at mount so the
+      // engine can emit one fade keyframe per word.
+      if (step.type === 'bot' && step.mode === 'words') {
+        const el = document.getElementById(step.id);
+        const wordCount = el ? el.querySelectorAll('[data-word]').length : 0;
+        return { ...step, wordCount };
+      }
+
       if (step.type !== 'cursor') return step;
 
       const cursorEl = document.getElementById(step.id);
