@@ -28,9 +28,20 @@
     0 4px 16px 0 rgba(0, 0, 0, 0.04),
     0 2px 2px 0 rgba(0, 0, 0, 0.02);
 
-  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
-  --ease-scroll: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Motion-tuned springs (generated via Motion's /generate-css-spring tool).
+     Each value is a linear() polyline calibrated to a perceptual duration +
+     bounce. We replace the legacy cubic-beziers in place — engine selectors
+     keep their existing var(--ease-*) references; only the curve shape changes. */
+  /* user message pop: bounce 0.45, perceptual 0.4s — playful overshoot */
+  --ease-pop: linear(0, 0.0568, 0.1935, 0.3674, 0.5468, 0.7108, 0.8474, 0.9519, 1.0246, 1.0689, 1.0903, 1.0945, 1.0873, 1.0733, 1.0565, 1.0397, 1.0246, 1.0122, 1.0029, 0.9966, 0.9929, 0.9912, 0.9911, 0.992, 0.9934, 0.995, 0.9965, 0.9979, 0.999, 0.9999, 1.0004, 1, 1);
+  /* widget / divider / meta / typewriter glue: bounce 0.2, perceptual 0.4s — gentle settle */
+  --ease-out-quart: linear(0, 0.2459, 0.6526, 0.9468, 1.0764, 1.0915, 1.0585, 1.0219, 0.9993, 0.9914, 0.9921, 0.9957, 0.9988, 1.0004, 1);
+  /* cursor traversal + form↔success morph: bounce 0.15, perceptual 0.5s — slight overshoot at target */
+  --ease-travel: linear(0, 0.3892, 0.921, 1.1515, 1.1295, 1.037, 0.9817, 0.9751, 0.9892, 1.0011, 1, 1.0026, 1.0003, 1, 0.9994, 0.9998, 1);
+  /* scroll: clean expo-out, no overshoot. ChatGPT/Claude/Notion AI use this
+     shape for turn-anchoring scrolls — gentle deceleration into the new
+     anchor without any rebound. */
+  --ease-scroll: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

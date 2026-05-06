@@ -2,7 +2,7 @@
 
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
-  SuggestionChips, SuggestionChip, DemoCursor, DebugScrubber,
+  SuggestionChips, SuggestionChip, DemoCursor,
 } from '@/components';
 import { PhoneIcon, InvoiceIcon } from '@/icons';
 import { useTimeline } from '@/hooks/useTimeline';
@@ -59,7 +59,6 @@ export default function SuggestedMessagesDemo() {
 
         <ChatInput />
       </ChatCard>
-      <DebugScrubber />
     </>
   );
 }

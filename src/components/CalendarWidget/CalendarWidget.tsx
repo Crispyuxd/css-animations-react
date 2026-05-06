@@ -21,6 +21,7 @@ export function CalendarWidget({ id, days, timeRows, children }: CalendarWidgetP
             <div key={d.num} id={d.id} className={styles.dayCell}>
               <span className={styles.dayNum}>{d.num}</span>
               <span className={styles.dayName}>{d.name}</span>
+              <span data-ring className={styles.ring} aria-hidden="true" />
             </div>
           ))}
         </div>
@@ -31,7 +32,10 @@ export function CalendarWidget({ id, days, timeRows, children }: CalendarWidgetP
         {timeRows.map((row, i) => (
           <div key={i} className={styles.timeRow}>
             {row.slots.map((slot) => (
-              <div key={slot.label} id={slot.id} className={styles.timeSlot}>{slot.label}</div>
+              <div key={slot.label} id={slot.id} className={styles.timeSlot}>
+                {slot.label}
+                <span data-ring className={styles.ring} aria-hidden="true" />
+              </div>
             ))}
           </div>
         ))}
