@@ -8,10 +8,10 @@ export const timeline: TimelineConfig = {
   metaHold: '0.9s',
   metaFadeOut: '0.36s',
   steps: [
-    { type: 'bot', id: 'bot-1', duration: '1.26s', pause: '0.36s',
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s',
       meta: { id: 'meta-0' } },
     { type: 'user', id: 'user-1', duration: '0.54s', pause: '0.72s' },
-    { type: 'bot', id: 'bot-2', duration: '5.04s', pause: '0.36s', lines: 4,
+    { type: 'bot', id: 'bot-2', lines: [57, 56, 53, 10], pause: '0.36s',
       meta: { id: 'meta-1', hold: '3.6s', fadeOut: '0s' } },
   ],
 };

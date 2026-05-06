@@ -11,9 +11,7 @@ export default function SlackDemo() {
     <ChatCard>
       <ChatHeader />
       <MessagesStack gap={20}>
-        <BotMessage id="bot-1" meta={<MetaRow id="meta-0" />}>
-          Hey, how can I help?
-        </BotMessage>
+        <BotMessage id="bot-1" lines={['Hey, how can I help?']} meta={<MetaRow id="meta-0" />} />
 
         <UserMessage id="user-1">
           Notify the sales team that the Acme deal closed

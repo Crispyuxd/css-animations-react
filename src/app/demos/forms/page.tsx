@@ -33,9 +33,7 @@ export default function FormsDemo() {
             id="forms-scroll"
             style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'stretch', width: 366 }}
           >
-            <BotMessage id="bot-1" meta={<MetaRow id="meta-0" />}>
-              Hey, how can I help?
-            </BotMessage>
+            <BotMessage id="bot-1" lines={['Hey, how can I help?']} meta={<MetaRow id="meta-0" />} />
 
             <UserMessage id="user-1">I want to submit a support case</UserMessage>
 
@@ -43,6 +41,7 @@ export default function FormsDemo() {
               <DemoState id="state-form">
                 <BotMessage
                   id="bot-2"
+                  lines={["No problem! Let's create one."]}
                   meta={<MetaRow id="meta-1" gap={12} />}
                   slot={
                     <FormCard id="form-card" title="Submit case">
@@ -60,16 +59,16 @@ export default function FormsDemo() {
                         valueId="msg-value"
                         valueLines={MESSAGE_LINES}
                       />
-                      <AttachButton id="btn-attach" />
-                      <AttachmentItem id="attach-1" filename="screenshot.png" type="image" />
-                      <AttachmentItem id="attach-2" filename="Payment issue.pdf" type="file" />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, width: '100%' }}>
+                        <AttachButton id="btn-attach" />
+                        <AttachmentItem id="attach-1" filename="screenshot.png" type="image" />
+                        <AttachmentItem id="attach-2" filename="Payment issue.pdf" type="file" />
+                      </div>
                       <CTAButton id="btn-submit" block>Submit</CTAButton>
                       <DemoCursor id="cursor-form" />
                     </FormCard>
                   }
-                >
-                  No problem! Let&apos;s create one.
-                </BotMessage>
+                />
               </DemoState>
 
               <DemoState id="state-success" overlay>

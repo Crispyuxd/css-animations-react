@@ -9,13 +9,13 @@ export const timeline: TimelineConfig = {
   metaFadeOut: '0.36s',
   steps: [
     // Bot greets
-    { type: 'bot', id: 'bot-1', duration: '1.26s', pause: '0.36s', meta: { id: 'meta-0' } },
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s', meta: { id: 'meta-0' } },
 
     // User asks
     { type: 'user', id: 'user-1', duration: '0.54s', pause: '0.72s' },
 
     // Bot offers form
-    { type: 'bot', id: 'bot-2', duration: '1.26s', pause: '0.36s' },
+    { type: 'bot', id: 'bot-2', lines: [29], pause: '0.36s' },
 
     // Form card slides in
     { type: 'widget', id: 'form-card', duration: '0.4s', pause: '0.2s' },
@@ -36,7 +36,7 @@ export const timeline: TimelineConfig = {
       ],
     },
     { type: 'transition', hide: 'email-placeholder', show: 'noop-email-pl', duration: '0.1s', pause: '0s' },
-    { type: 'bot', id: 'email-value', duration: '1.26s', pause: '0.3s' },
+    { type: 'bot', id: 'email-value', duration: '0.7s', pause: '0.3s' },
     { type: 'deselect', target: 'field-email-value', duration: '0.2s', pause: '0s' },
 
     // === Message field — pointer travels in, becomes I-beam at click ===
@@ -46,7 +46,7 @@ export const timeline: TimelineConfig = {
       ],
     },
     { type: 'transition', hide: 'msg-placeholder', show: 'noop-msg-pl', duration: '0.1s', pause: '0s' },
-    { type: 'bot', id: 'msg-value', lines: 6, duration: '7.56s', pause: '0.3s' },
+    { type: 'bot', id: 'msg-value', lines: [31, 32, 34, 36, 36, 42], cps: 90, pause: '0.3s' },
     { type: 'deselect', target: 'field-msg-value', duration: '0.2s', pause: '0s' },
 
     // === Add attachment === Click → simulated file-picker delay → files appear
@@ -58,9 +58,14 @@ export const timeline: TimelineConfig = {
       ],
     },
 
-    // Files appear with a quick stagger, like a file picker resolved
-    { type: 'widget', id: 'attach-1', duration: '0.25s', pause: '0.12s' },
-    { type: 'widget', id: 'attach-2', duration: '0.25s', pause: '0.2s' },
+    // Files appear with a quick stagger, like a file picker resolved.
+    // Both attachments live in a gap:16 wrapper alongside AttachButton (per
+    // Figma node 807:11883). `collapse` zeroes each item's layout footprint
+    // pre-show: height 0 + margin-top -16 cancels its leading gap, so the
+    // wrapper hugs AttachButton when no files are present and grows by
+    // exactly 36px (16 gap + 20 row) per file as it slides in.
+    { type: 'widget', id: 'attach-1', duration: '0.25s', pause: '0.12s', collapse: { height: '20px', marginTop: '-16px' } },
+    { type: 'widget', id: 'attach-2', duration: '0.25s', pause: '0.2s', collapse: { height: '20px', marginTop: '-16px' } },
 
     // AttachButton border returns to default once files have arrived
     { type: 'deselect', target: 'btn-attach', duration: '0.2s', pause: '0.1s' },
@@ -81,7 +86,7 @@ export const timeline: TimelineConfig = {
 
     // Bot announces first (typewriter), THEN success card appears below.
     // This is the natural order: bot says "submitted" → result card shows up.
-    { type: 'bot', id: 'bot-3', duration: '2.52s', lines: 2, pause: '0.3s' },
+    { type: 'bot', id: 'bot-3', lines: [42, 52], pause: '0.3s' },
     { type: 'widget', id: 'success-card', duration: '0.45s', slideY: '12px', pause: '0.3s' },
 
     // Final timestamp

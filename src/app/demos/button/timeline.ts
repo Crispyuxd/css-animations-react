@@ -10,14 +10,14 @@ export const timeline: TimelineConfig = {
   steps: [
     // Bot greets — typewriter, then "Just now" fades in/holds/fades out
     // fully before the user message appears (matches Tavily / Custom-actions).
-    { type: 'bot', id: 'bot-1', duration: '1.26s', pause: '0.36s',
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s',
       meta: { id: 'meta-0' } },
 
     // User asks
     { type: 'user', id: 'user-1', duration: '0.54s', pause: '0.72s' },
 
     // Bot replies — single line typewriter
-    { type: 'bot', id: 'bot-2', duration: '1.26s', pause: '0.3s' },
+    { type: 'bot', id: 'bot-2', lines: [34], pause: '0.3s' },
 
     // CTA button slides in right after the bot text finishes
     { type: 'widget', id: 'btn-pricing', duration: '0.4s', pause: '0.3s' },
