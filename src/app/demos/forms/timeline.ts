@@ -26,7 +26,7 @@ export const timeline: TimelineConfig = {
     // Form card slides in below bot-2. At scroll -44 the empty form (438px)
     // fits within the visible area: user-1 at top, bot-2 below, full form,
     // meta+input below — agent's message stays visible.
-    { type: 'widget', id: 'form-card', duration: '0.4s', pause: '0.18s' },
+    { type: 'widget', id: 'form-card', duration: '0.55s', slideY: '12px', pause: '0.18s' },
 
     // "Just now" timestamp (parallel, stays visible while form fills)
     { type: 'meta', id: 'meta-1', fadeIn: '0.36s', hold: '0s', fadeOut: '0s', parallel: true },
@@ -36,32 +36,32 @@ export const timeline: TimelineConfig = {
       startX: 280, startY: 480,
       appear: '0.3s',
       waypoints: [
-        { target: 'field-email-value', travel: '0.7s', click: '0.12s', pause: '0.2s', select: 'field-email-value', mode: 'text' },
+        { target: 'field-email-value', travel: '1.1s', click: '0.12s', pause: '0.2s', select: 'field-email-value', mode: 'text' },
       ],
     },
     { type: 'transition', hide: 'email-placeholder', show: 'noop-email-pl', duration: '0.1s', pause: '0s' },
     // Email — brisk; user knows their own address. Single-line so duration
     // path (FormInputRow renders one <span>; lines:[] would mis-target).
-    { type: 'bot', id: 'email-value', duration: '0.4s', pause: '0.3s' },
+    { type: 'bot', id: 'email-value', duration: '0.4s', pause: '0.3s', caret: true },
     { type: 'deselect', target: 'field-email-value', duration: '0.2s', pause: '0s' },
 
     // === Message field — pointer travels in, becomes I-beam at click ===
     { type: 'cursor', id: 'cursor-form',
       waypoints: [
-        { target: 'field-msg-value', travel: '0.7s', click: '0.12s', pause: '0.2s', select: 'field-msg-value', mode: 'text' },
+        { target: 'field-msg-value', travel: '1.0s', click: '0.12s', pause: '0.2s', select: 'field-msg-value', mode: 'text' },
       ],
     },
     { type: 'transition', hide: 'msg-placeholder', show: 'noop-msg-pl', duration: '0.1s', pause: '0s' },
     // Message body — fast-but-human start; gentle decay sells "typing slows
     // as user thinks deeper". 65 cps line 1 → ~40 cps line 6.
-    { type: 'bot', id: 'msg-value', lines: [31, 32, 34, 36, 36, 42], cps: 65, accel: 0.92, pause: '0.3s' },
+    { type: 'bot', id: 'msg-value', lines: [31, 32, 34, 36, 36, 42], cps: 65, accel: 0.92, pause: '0.3s', caret: true },
     { type: 'deselect', target: 'field-msg-value', duration: '0.2s', pause: '0s' },
 
     // === Add attachment === Click triggers a deeper scroll to make room
     // for the incoming attachment rows (form will grow from 438 → 510 tall).
     { type: 'cursor', id: 'cursor-form',
       waypoints: [
-        { target: 'btn-attach', travel: '0.7s', click: '0.12s', pause: '0.1s', select: 'btn-attach' },
+        { target: 'btn-attach', travel: '1.0s', click: '0.12s', pause: '0.1s', select: 'btn-attach' },
       ],
     },
 
@@ -76,8 +76,8 @@ export const timeline: TimelineConfig = {
     // leading gap so the wrapper hugs AttachButton when no files are
     // present and grows by exactly 36px (16 gap + 20 row) per file as
     // it slides in (Figma node 807:11883).
-    { type: 'widget', id: 'attach-1', duration: '0.25s', pause: '0.12s', collapse: { height: '20px', marginTop: '-16px' } },
-    { type: 'widget', id: 'attach-2', duration: '0.25s', pause: '0.2s', collapse: { height: '20px', marginTop: '-16px' } },
+    { type: 'widget', id: 'attach-1', duration: '0.5s', slideY: '6px', pause: '0.18s', collapse: { height: '20px', marginTop: '-16px' } },
+    { type: 'widget', id: 'attach-2', duration: '0.5s', slideY: '6px', pause: '0.24s', collapse: { height: '20px', marginTop: '-16px' } },
 
     // AttachButton border returns to default once files have arrived. Stay
     // anchored at -113 — Submit is in view, no need to pull back to user-1
@@ -87,7 +87,7 @@ export const timeline: TimelineConfig = {
     // === Submit ===
     { type: 'cursor', id: 'cursor-form',
       waypoints: [
-        { target: 'btn-submit', travel: '0.7s', click: '0.12s', pause: '0.3s', select: 'btn-submit' },
+        { target: 'btn-submit', travel: '1.0s', click: '0.12s', pause: '0.3s', select: 'btn-submit' },
       ],
     },
 
@@ -95,21 +95,32 @@ export const timeline: TimelineConfig = {
     // wrapper at offsetTop 129 sits at +16 in the visible area during the
     // morph itself, so state-success appears in the form's old slot.
 
-    // Form MORPHS into the success state — both elements meet at scale 0.86
-    // with opposite tilts and a soft blur for a single-shape transformation.
-    // 30% cross-fade overlap window keeps the morph reading as continuous.
+    // Camera pans BACK UP first — pull the view to user-1 + bot-2 while the
+    // form is still visible below. This way the morph happens in a frame that
+    // already shows the user's question, instead of fading-then-revealing.
+    { type: 'scroll', target: 'forms-scroll', y: -44, duration: '0.5s', pause: '0.1s' },
+
+    // Form card MORPHS into the success card. bot-2 ("No problem...") stays
+    // visible above the morph — only the card area transforms. success-card
+    // itself stays invisible (its widget show animation hasn't fired yet),
+    // so state-success appears as an empty container during this window.
     { type: 'transition', hide: 'state-form', show: 'state-success', duration: '0.7s', pause: '0.18s', morph: true },
 
-    // After the morph, pull back so user-1's chat bubble re-enters view
-    // alongside the success state. Camera "steps back" to frame the
-    // completed conversation: user message at top, AI's success below.
-    { type: 'scroll', target: 'forms-scroll', y: -44, duration: '0.5s', pause: '0.18s' },
+    // Bot-2 backspaces — same `steps()` cadence as the type-in but in reverse,
+    // so the eye reads it as the agent retracting its previous line before
+    // committing to the success message. ~64 cps gives a brisk erase.
+    { type: 'untype', target: 'bot-2-line-1', duration: '0.45s', pause: '0.05s' },
 
-    // Success card pops IMMEDIATELY after the morph (people want to see
-    // confirmation, not wait for bot-3 to type first). Bot follow-up below.
-    { type: 'widget', id: 'success-card', duration: '0.45s', slideY: '12px', pause: '0.18s', shimmer: true },
+    // Wrapper swap is purely an opacity flip — bot-3's lines are still clipped
+    // by their own typewriter, so the visible content arrives via `bot-3`
+    // below. `parallel: true` keeps cursor on the typewriter's start frame.
+    { type: 'transition', hide: 'state-form-bot', show: 'state-success-bot', duration: '0.05s', slideOutY: '0px', parallel: true },
     // Bot success follow-up — calm pace with gentle decay
     { type: 'bot', id: 'bot-3', lines: [42, 52], cps: 50, accel: 0.92, pause: '0.3s' },
+
+    // Success card pops in AFTER bot-3 has finished typing — text first,
+    // then the confirmation card appears below it.
+    { type: 'widget', id: 'success-card', duration: '0.45s', slideY: '12px', pause: '0.18s', shimmer: true },
 
     // Final timestamp
     { type: 'meta', id: 'meta-2', fadeIn: '0.36s', hold: '0s', fadeOut: '0s', parallel: true },

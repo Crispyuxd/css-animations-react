@@ -35,9 +35,26 @@
 }
 .placeholder { color: var(--text-placeholder); }
 .value { color: var(--text-heading); }
-.line {
+.lineWrap {
   display: block;
+  position: relative;
+  width: max-content;
+  max-width: 100%;
+}
+.line {
+  display: inline-block;
   clip-path: inset(0 100% 0 0);
+}
+.caret {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 1px;
+  height: 20px;
+  background: var(--text-heading);
+  opacity: 0;
+  pointer-events: none;
 }
 .ring {
   position: absolute;

@@ -18,7 +18,10 @@ export function FormInputRow({
       <span className={styles.label}>{label}</span>
       <div className={styles.field} id={`field-${valueId}`}>
         <span id={placeholderId} className={styles.placeholder}>{placeholder}</span>
-        <span id={valueId} className={styles.value}>{value}</span>
+        <span className={styles.valueWrap}>
+          <span id={valueId} className={styles.value}>{value}</span>
+          <span id={`caret-${valueId}`} className={styles.caret} aria-hidden="true" />
+        </span>
         <span data-ring className={styles.ring} aria-hidden="true" />
       </div>
     </div>

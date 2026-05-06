@@ -30,12 +30,22 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   // Each waypoint with `mode: 'text'` swaps the inner icon at click time.
   const cursorIconData: Record<string, Array<{ pct: string; opacity: number }>> = {};
 
+  // Aggregator for typewriter lines (array-lines bot mode). We defer keyframe
+  // emission so a later `untype` step can extend the same keyframe with
+  // backspace stops — running two animations on `clip-path` would conflict,
+  // so a single keyframe per line is the only correct approach.
+  const lineTypeData: Record<string, { chars: number; lsMs: number; leMs: number; bsMs?: number; beMs?: number }> = {};
+
   // Anticipation pulse on click targets — the receiving element subtly
   // scales as the cursor arrives. Composite-only (transform). Disney-12
   // anticipation principle: target acknowledges incoming intent.
   const pulseData: Record<string, Array<{ pct: string; scale: number }>> = {};
 
   const pct = (ms: number) => (ms / cycleMs * 100).toFixed(1);
+  // Higher-precision pct for caret transition stops — toFixed(1) collides on
+  // sub-millisecond gaps over long cycles (35s → 0.003%/ms), making the
+  // "hidden before / visible at start" stops resolve to the same selector.
+  const pctP = (ms: number) => (ms / cycleMs * 100).toFixed(3);
 
   function emitMeta(m: { id: string; fadeIn?: string | number; hold?: string | number; fadeOut?: string | number; pause?: string | number; parallel?: boolean }) {
     const fadeIn = parseMs(m.fadeIn || defaultMetaFadeIn);
@@ -88,15 +98,23 @@ export function generateTimelineCSS(config: TimelineConfig): string {
           const chars = Math.max(1, charCounts[i]);
           const lineCps = baseCps * Math.pow(accel, i);
           const lineDurMs = (chars / lineCps) * 1000;
-          const ls = pct(lineCursorMs);
-          const le = pct(lineCursorMs + lineDurMs);
           const lineId = `${step.id}-line-${i + 1}`;
-          rules.push(`@keyframes tw-${lineId} {
-  0% { clip-path: inset(0 100% 0 0); animation-timing-function: linear; }
-  ${ls}% { clip-path: inset(0 100% 0 0); animation-timing-function: steps(${chars}, end); }
-  ${le}%, 100% { clip-path: inset(0 0% 0 0); }
+          // Defer tw-${lineId} keyframe emission — a later `untype` step may
+          // extend it with backspace stops. Emitted in the post-loop sweep.
+          lineTypeData[lineId] = { chars, lsMs: lineCursorMs, leMs: lineCursorMs + lineDurMs };
+          if (step.caret) {
+            const lsP = pctP(lineCursorMs);
+            const leP = pctP(lineCursorMs + lineDurMs);
+            const lsMinus = pctP(Math.max(lineCursorMs - 30, 0));
+            const lePlus = pctP(lineCursorMs + lineDurMs + 30);
+            rules.push(`@keyframes caret-${lineId} {
+  0%, ${lsMinus}% { opacity: 0; left: 0%; }
+  ${lsP}% { opacity: 1; left: 0%; }
+  ${leP}% { opacity: 1; left: 100%; }
+  ${lePlus}%, 100% { opacity: 0; left: 100%; }
 }`);
-          rules.push(`#${lineId} { animation: tw-${lineId} ${cycleStr} infinite both; }`);
+            rules.push(`#caret-${lineId} { animation: caret-${lineId} ${cycleStr} linear infinite both; }`);
+          }
           lineCursorMs += lineDurMs;
         }
         cursor = lineCursorMs;
@@ -127,6 +145,19 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   ${endPct}%, 100% { clip-path: inset(0 0% 0 0); }
 }`);
           rules.push(`#${step.id} { animation: tw-${step.id} ${cycleStr} infinite both; }`);
+        }
+        if (step.caret) {
+          const lsP = pctP(cursor);
+          const leP = pctP(cursor + dur);
+          const lsMinus = pctP(Math.max(cursor - 30, 0));
+          const lePlus = pctP(cursor + dur + 30);
+          rules.push(`@keyframes caret-${step.id} {
+  0%, ${lsMinus}% { opacity: 0; left: 0%; }
+  ${lsP}% { opacity: 1; left: 0%; }
+  ${leP}% { opacity: 1; left: 100%; }
+  ${lePlus}%, 100% { opacity: 0; left: 100%; }
+}`);
+          rules.push(`#caret-${step.id} { animation: caret-${step.id} ${cycleStr} linear infinite both; }`);
         }
         cursor += dur;
         if (step.meta) emitMeta(step.meta);
@@ -328,6 +359,18 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       cursor += dur + parseMs(step.pause || '0s');
     }
 
+    else if (step.type === 'untype') {
+      const dur = parseMs(step.duration || '0.5s');
+      const data = lineTypeData[step.target];
+      if (data) {
+        data.bsMs = cursor;
+        data.beMs = cursor + dur;
+      } else {
+        console.warn(`[timeline] untype target "${step.target}" not in tracked typewriter lines`);
+      }
+      cursor += dur + parseMs(step.pause || '0s');
+    }
+
     else if (step.type === 'deselect') {
       const dur = parseMs(step.duration || '0.2s');
       const endPct = pct(cursor + dur);
@@ -358,21 +401,21 @@ export function generateTimelineCSS(config: TimelineConfig): string {
           rules.push(`@keyframes show-${step.hide} {
   0%, ${showInfo.startPct}% { opacity: 0; transform: translateY(${showInfo.slideY}) scale(0.99); }
   ${showInfo.endPct}% { opacity: 1; transform: translateY(0) scale(1); }
-  ${startPct}% { opacity: 1; transform: scale(1) rotate(0deg); filter: blur(0); animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0); }
-  ${morphMidPct}% { opacity: 0; transform: scale(0.86) rotate(2deg); filter: blur(1.5px); }
-  ${endPct}%, 100% { opacity: 0; transform: scale(0.86) rotate(2deg); filter: blur(1.5px); }
+  ${startPct}% { opacity: 1; transform: scale(1); filter: blur(0); animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0); }
+  ${morphMidPct}% { opacity: 0; transform: scale(0.86); filter: blur(1.5px); }
+  ${endPct}%, 100% { opacity: 0; transform: scale(0.86); filter: blur(1.5px); }
 }`);
         } else {
           rules.push(`@keyframes hide-${step.hide} {
-  0%, ${startPct}% { opacity: 1; transform: scale(1) rotate(0deg); filter: blur(0); animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0); }
-  ${morphMidPct}% { opacity: 0; transform: scale(0.86) rotate(2deg); filter: blur(1.5px); }
-  ${endPct}%, 100% { opacity: 0; transform: scale(0.86) rotate(2deg); filter: blur(1.5px); }
+  0%, ${startPct}% { opacity: 1; transform: scale(1); filter: blur(0); animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0); }
+  ${morphMidPct}% { opacity: 0; transform: scale(0.86); filter: blur(1.5px); }
+  ${endPct}%, 100% { opacity: 0; transform: scale(0.86); filter: blur(1.5px); }
 }`);
           rules.push(`#${step.hide} { animation: hide-${step.hide} ${cycleStr} linear infinite both; will-change: transform, opacity, filter; }`);
         }
         rules.push(`@keyframes show-${step.show} {
-  0%, ${morphShowStartPct}% { opacity: 0; transform: scale(0.88) rotate(-1.5deg); filter: blur(1px); animation-timing-function: var(--ease-travel); }
-  ${endPct}%, 100% { opacity: 1; transform: scale(1) rotate(0deg); filter: blur(0); }
+  0%, ${morphShowStartPct}% { opacity: 0; transform: scale(0.88); filter: blur(1px); animation-timing-function: var(--ease-travel); }
+  ${endPct}%, 100% { opacity: 1; transform: scale(1); filter: blur(0); }
 }`);
         rules.push(`#${step.show} { animation: show-${step.show} ${cycleStr} linear infinite both; will-change: transform, opacity, filter; }`);
       } else {
@@ -398,7 +441,12 @@ export function generateTimelineCSS(config: TimelineConfig): string {
 }`);
         rules.push(`#${step.show} { animation: show-${step.show} ${cycleStr} var(--ease-out-quart) infinite both; will-change: transform, opacity; }`);
       }
-      cursor += dur + parseMs(step.pause || '0s');
+      // `parallel: true` skips the cursor advance so a following step starts
+      // at the same time — used when two transitions need to run concurrently
+      // (e.g. cross-fading bot-text alongside a card morph).
+      if (!step.parallel) {
+        cursor += dur + parseMs(step.pause || '0s');
+      }
     }
   }
 
@@ -448,6 +496,29 @@ export function generateTimelineCSS(config: TimelineConfig): string {
     const frameStrs = stops.map(s => `${s.pct} { opacity: ${s.selected ? 1 : 0}; }`);
     rules.push(`@keyframes sel-${id} {\n  ${frameStrs.join('\n  ')}\n}`);
     rules.push(`#${id} [data-ring] { animation: sel-${id} ${cycleStr} linear infinite both; will-change: opacity; }`);
+  }
+
+  // Emit deferred typewriter line keyframes. With an `untype` step the same
+  // keyframe carries both type-in (steps→reveal) and type-out (steps→hide)
+  // stops, so a single animation owns clip-path end-to-end.
+  for (const [lineId, d] of Object.entries(lineTypeData)) {
+    const ls = pct(d.lsMs);
+    const le = pct(d.leMs);
+    const stops: string[] = [
+      `0% { clip-path: inset(0 100% 0 0); animation-timing-function: linear; }`,
+      `${ls}% { clip-path: inset(0 100% 0 0); animation-timing-function: steps(${d.chars}, end); }`,
+    ];
+    if (d.bsMs !== undefined && d.beMs !== undefined) {
+      const bs = pct(d.bsMs);
+      const be = pct(d.beMs);
+      stops.push(`${le}% { clip-path: inset(0 0% 0 0); animation-timing-function: linear; }`);
+      stops.push(`${bs}% { clip-path: inset(0 0% 0 0); animation-timing-function: steps(${d.chars}, end); }`);
+      stops.push(`${be}%, 100% { clip-path: inset(0 100% 0 0); }`);
+    } else {
+      stops.push(`${le}%, 100% { clip-path: inset(0 0% 0 0); }`);
+    }
+    rules.push(`@keyframes tw-${lineId} {\n  ${stops.join('\n  ')}\n}`);
+    rules.push(`#${lineId} { animation: tw-${lineId} ${cycleStr} infinite both; }`);
   }
 
   // stackFadeCycle

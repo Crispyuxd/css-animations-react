@@ -37,50 +37,64 @@ export default function FormsDemo() {
 
             <UserMessage id="user-1">I want to submit a support case</UserMessage>
 
+            {/* Bot text — bot-2 cross-fades to bot-3 in the same position so
+                the message "updates in place". Wrapper sizes to bot-2 (1 line)
+                so the form-card sits flush; bot-3 line 2 (~19.6px at lh 1.4 ×
+                14px) fits into the 20px flex gap below before the card area. */}
             <div style={{ position: 'relative', width: '100%' }}>
-              <DemoState id="state-form">
-                <BotMessage
-                  id="bot-2"
-                  lines={["No problem! Let's create one."]}
-                  meta={<MetaRow id="meta-1" gap={12} />}
-                  slot={
-                    <FormCard id="form-card" title="Submit case">
-                      <FormInputRow
-                        label="Email"
-                        placeholder="Enter your email address"
-                        placeholderId="email-placeholder"
-                        valueId="email-value"
-                        value="mark@rhytmbox.co"
-                      />
-                      <FormTextareaRow
-                        label="Message"
-                        placeholder="Enter your message"
-                        placeholderId="msg-placeholder"
-                        valueId="msg-value"
-                        valueLines={MESSAGE_LINES}
-                      />
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, width: '100%' }}>
-                        <AttachButton id="btn-attach" />
-                        <AttachmentItem id="attach-1" filename="screenshot.png" type="image" />
-                        <AttachmentItem id="attach-2" filename="Payment issue.pdf" type="file" />
-                      </div>
-                      <CTAButton id="btn-submit" block>Submit</CTAButton>
-                      <DemoCursor id="cursor-form" />
-                    </FormCard>
-                  }
-                />
-              </DemoState>
-
-              <DemoState id="state-success" overlay>
+              <div id="state-form-bot">
+                <BotMessage id="bot-2" lines={["No problem! Let's create one."]} />
+              </div>
+              <div id="state-success-bot" style={{ position: 'absolute', top: 0, left: 0, right: 0, opacity: 0 }}>
                 <BotMessage
                   id="bot-3"
-                  meta={<MetaRow id="meta-2" gap={12} />}
-                  slot={<CaseCreatedCard id="success-card" caseId="#4244-424" />}
                   lines={[
                     'Your case has been submitted successfully.',
                     'Our team will review it and get back to you shortly.',
                   ]}
                 />
+              </div>
+            </div>
+
+            {/* Card — form-card morphs into success-card in place. Meta rows
+                live with the card so they sit below the active card visually. */}
+            <div style={{ position: 'relative', width: '100%' }}>
+              <DemoState id="state-form">
+                <FormCard id="form-card" title="Submit case">
+                  <FormInputRow
+                    label="Email"
+                    placeholder="Enter your email address"
+                    placeholderId="email-placeholder"
+                    valueId="email-value"
+                    value="mark@rhytmbox.co"
+                  />
+                  <FormTextareaRow
+                    label="Message"
+                    placeholder="Enter your message"
+                    placeholderId="msg-placeholder"
+                    valueId="msg-value"
+                    valueLines={MESSAGE_LINES}
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16, width: '100%' }}>
+                    <AttachButton id="btn-attach" />
+                    <AttachmentItem id="attach-1" filename="screenshot.png" type="image" />
+                    <AttachmentItem id="attach-2" filename="Payment issue.pdf" type="file" />
+                  </div>
+                  <CTAButton id="btn-submit" block>Submit</CTAButton>
+                  <DemoCursor id="cursor-form" />
+                </FormCard>
+                <MetaRow id="meta-1" gap={12} />
+              </DemoState>
+
+              <DemoState id="state-success" overlay>
+                {/* 20px top spacer: bot-3's 2nd line (lh 1.4 × 14px ≈ 20px)
+                    extends down into the 20px flex gap above this wrapper —
+                    this margin restores the visual gap between the bot text
+                    and the success card so the spacing matches the form state. */}
+                <div style={{ marginTop: 20 }}>
+                  <CaseCreatedCard id="success-card" caseId="#4244-424" />
+                  <MetaRow id="meta-2" gap={12} />
+                </div>
               </DemoState>
             </div>
           </div>
