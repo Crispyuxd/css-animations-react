@@ -16,8 +16,10 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   // Track widget show times so transition can combine show+hide into one animation
   const widgetShowTimes: Record<string, { startPct: string; endPct: string; slideY: string }> = {};
 
-  // Aggregate multiple cursor steps with the same id into one keyframe
-  const cursorData: Record<string, { frames: string[]; lastX: number; lastY: number; initialized: boolean }> = {};
+  // Aggregate multiple cursor steps with the same id into one keyframe.
+  // `parked` indicates the previous cursor step ended at a rest position with
+  // opacity 1 (instead of fading out), so the next step skips the fade-in.
+  const cursorData: Record<string, { frames: string[]; lastX: number; lastY: number; initialized: boolean; parked: boolean }> = {};
 
   // Aggregate scroll steps per target — emit one keyframe with all stops
   const scrollData: Record<string, { stops: Array<{ pct: string; ty: number }>; lastY: number }> = {};
@@ -215,7 +217,8 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   ${endPct}%, 100% { opacity: 1; transform: translateY(0); }
 }`);
       }
-      rules.push(`#${step.id} { animation: show-${step.id} ${cycleStr} var(--ease-out-quart) infinite both; will-change: transform, opacity; }`);
+      const widgetEase = step.ease || 'var(--ease-out-quart)';
+      rules.push(`#${step.id} { animation: show-${step.id} ${cycleStr} ${widgetEase} infinite both; will-change: transform, opacity; }`);
 
       // Shimmer overlay — radial sweep that fires alongside the widget's
       // entry. Targets a child [data-shimmer] element so the parent's existing
@@ -241,7 +244,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
 
       // Lazily init aggregate for this cursor id
       if (!cursorData[id]) {
-        cursorData[id] = { frames: [], lastX: 0, lastY: 0, initialized: false };
+        cursorData[id] = { frames: [], lastX: 0, lastY: 0, initialized: false, parked: false };
       }
       const data = cursorData[id];
 
@@ -272,6 +275,10 @@ export function generateTimelineCSS(config: TimelineConfig): string {
         data.lastX = startX;
         data.lastY = startY;
         data.initialized = true;
+      } else if (data.parked) {
+        // Previous step parked the cursor at a rest position (opacity 1).
+        // No fade-in — start traveling from rest immediately.
+        data.frames.push(`${pct(c)}% { opacity: 1; ${pos(data.lastX, data.lastY, 1)} }`);
       } else {
         // Cursor was faded out at end of previous step. Hold hidden at last
         // position, then fade back in for this step.
@@ -281,6 +288,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
         data.frames.push(`${pct(c)}% { opacity: 1; ${pos(data.lastX, data.lastY, 1)} }`);
       }
 
+      let lastMode: 'pointer' | 'text' = 'pointer';
       for (const wp of waypoints) {
         const travel = parseMs(wp.travel || '0.5s');
         const click = parseMs(wp.click || '0.12s');
@@ -323,14 +331,44 @@ export function generateTimelineCSS(config: TimelineConfig): string {
         c += wpPause;
         data.lastX = wx;
         data.lastY = wy;
+        lastMode = mode;
       }
 
-      // Fade cursor out at end of step so it disappears while the next thing
-      // (typing, attachment slide-in) happens. The next cursor step will fade
-      // it back in.
-      const disappear = parseMs('0.18s');
-      c += disappear;
-      data.frames.push(`${pct(c)}% { opacity: 0; ${pos(data.lastX, data.lastY, 1)} }`);
+      if (step.rest) {
+        // Park cursor at a rest position on the right side instead of fading
+        // out. Cursor stays opacity 1 and the next cursor step travels from
+        // here directly — feels more like a real user moving the mouse aside
+        // after each click instead of the cursor blinking in and out.
+
+        // Swap icon back to pointer the moment the cursor leaves the click
+        // target — otherwise a text-mode click would leave the I-beam visible
+        // all the way through the parked-at-rest period. Mirror the click-time
+        // swap pattern: hold previous state up to c-50ms, then snap.
+        if (lastMode === 'text') {
+          const beforePct = pct(Math.max(c - 50, 0));
+          cursorIconData[pointerIconId].push({ pct: `${beforePct}%`, opacity: 0 });
+          cursorIconData[pointerIconId].push({ pct: `${pct(c)}%`, opacity: 1 });
+          cursorIconData[textIconId].push({ pct: `${beforePct}%`, opacity: 1 });
+          cursorIconData[textIconId].push({ pct: `${pct(c)}%`, opacity: 0 });
+        }
+
+        const restX = step.rest.x ?? 330;
+        const restY = step.rest.y ?? data.lastY;
+        const restTravel = parseMs(step.rest.travel || '0.5s');
+        c += restTravel;
+        data.frames.push(`${pct(c)}% { opacity: 1; ${pos(restX, restY, 1)} }`);
+        data.lastX = restX;
+        data.lastY = restY;
+        data.parked = true;
+      } else {
+        // Fade cursor out at end of step so it disappears while the next thing
+        // (typing, attachment slide-in) happens. The next cursor step will fade
+        // it back in.
+        const disappear = parseMs('0.18s');
+        c += disappear;
+        data.frames.push(`${pct(c)}% { opacity: 0; ${pos(data.lastX, data.lastY, 1)} }`);
+        data.parked = false;
+      }
 
       cursor = c;
     }
@@ -347,7 +385,12 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       data.stops.push({ pct: `${pct(cursor)}%`, ty: data.lastY });
       data.stops.push({ pct: `${pct(cursor + dur)}%`, ty: step.y });
       data.lastY = step.y;
-      cursor += dur + parseMs(step.pause || '0s');
+      // `parallel: true` keeps the cursor put so the next step starts at the
+      // same time — used when the scroll should run concurrently with the
+      // arrival of new content (e.g. anchoring a user bubble at the top).
+      if (!step.parallel) {
+        cursor += dur + parseMs(step.pause || '0s');
+      }
     }
 
     else if (step.type === 'select') {
@@ -357,6 +400,24 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       selectionData[step.id].push({ pct: `${startPct}%`, selected: false });
       selectionData[step.id].push({ pct: `${endPct}%`, selected: true });
       cursor += dur + parseMs(step.pause || '0s');
+    }
+
+    else if (step.type === 'shimmer') {
+      // Standalone shimmer — emits the same green radial sweep that widget
+      // step uses, but on its own keyframe so it can fire independently
+      // (e.g. timed against a morph reveal). Doesn't advance the cursor by
+      // default — pause if you want subsequent steps to wait.
+      const dur = parseMs(step.duration || '0.45s');
+      const shimmerStart = pct(cursor);
+      const shimmerPeak = pct(cursor + dur * 0.55);
+      const shimmerEnd = pct(cursor + dur + parseMs('0.35s'));
+      rules.push(`@keyframes shimmer-${step.target} {
+  0%, ${shimmerStart}% { opacity: 0; transform: scale(0.4); }
+  ${shimmerPeak}% { opacity: 1; transform: scale(1); }
+  ${shimmerEnd}%, 100% { opacity: 0; transform: scale(1.7); }
+}`);
+      rules.push(`#${step.target} [data-shimmer] { animation: shimmer-${step.target} ${cycleStr} var(--ease-travel) infinite both; will-change: transform, opacity; }`);
+      cursor += parseMs(step.pause || '0s');
     }
 
     else if (step.type === 'untype') {
@@ -456,7 +517,12 @@ export function generateTimelineCSS(config: TimelineConfig): string {
     if (!data.initialized) continue;
     data.frames.push(`100% { opacity: 0; transform: translate3d(${data.lastX}px, ${data.lastY}px, 0) scale(1); }`);
     rules.push(`@keyframes move-${id} {\n  ${data.frames.join('\n  ')}\n}`);
-    rules.push(`#${id} { animation: move-${id} ${cycleStr} var(--ease-travel) infinite both; will-change: transform, opacity; }`);
+    // cubic-bezier(0.4, 0, 0.2, 1) — Material Design standard ease. Gentle
+    // and symmetric, no overshoot, no steep deceleration tail. Closer to
+    // natural mouse motion than the springy ease-travel or the snappier
+    // ease-scroll. Applied to every segment of the cursor keyframe so the
+    // click compression (scale 1 → 0.85 → 1) also reads smooth.
+    rules.push(`#${id} { animation: move-${id} ${cycleStr} cubic-bezier(0.4, 0, 0.2, 1) infinite both; will-change: transform, opacity; }`);
   }
 
   // Emit aggregated scroll keyframes
