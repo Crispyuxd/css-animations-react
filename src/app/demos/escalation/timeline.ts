@@ -1,28 +1,24 @@
 import type { TimelineConfig } from '@/lib/types';
 
 // Layout reference (offsetTop within #escalation-scroll, gap 20 +
-// UserMessage CSS defaults of marginTop/marginBottom 12 + divider
-// marginTop 24):
-//   bot-1 botBlock      0..20    meta-0 abs at 28..44
-//   user-1 row         52..97
-//   bot-2 botBlock    129..168   meta-1 abs at 176..192
-//   divider-1 (mt 24) 212..228
-//   bot-3 botBlock    248..268   meta-2 abs at 276..292
-//   user-2 row        299..365
-//   bot-4 botBlock    397..417   meta-3 abs at 425..441
+// UserMessage CSS margins 12/12 + divider margins 12/12 + MetaRow
+// in-flow at margin-top 8, height 16 → adds 24 to its bot's height):
+//   bot-1 botBlock      0..44   (text 0..20, meta-0 inline at 28..44)
+//   user-1 row         76..120
+//   bot-2 botBlock    152..216  (text 152..192, meta-1 inline 200..216)
+//   divider-1         248..264
+//   bot-3 botBlock    296..340  (text 296..316, meta-2 inline 324..340)
+//   user-2 row        372..438
+//   bot-4 botBlock    470..514  (text 470..490, meta-3 inline 498..514)
 //
-// .messages has 20px padding + overflow:hidden, clipping at the padding-box
-// edge. Element fully hidden above viewport when:
-//     offsetTop + scrollY + 20 + height ≤ 0
-// Element lands at header gap G when:
-//     offsetTop + scrollY + 20 = G
+// .messages has 20px padding + overflow:hidden. Element lands at
+// padding-box y G when:  offsetTop + 20 + scrollY = G
 //
-// Forms-style anchors — only fire on user-message arrivals; the divider
-// arrives in its natural mid-viewport position with bot-2 + meta-1 still
-// visible above as conversation context.
-//   -64   user-1 anchor — bot-1 + meta-0 scroll up together; user-1 gap 8
-//   -312  user-2 anchor — bot-2, meta-1, divider, bot-3, meta-2 ALL scroll
-//                         up together as one block; user-2 gap 7
+// User-message anchors land at padding-box y = 20 (= flush with the
+// content-box top, respecting the 20px inset rule):
+//   -76   user-1 anchor — bot-1+meta-0 scroll up together
+//   -372  user-2 anchor — everything from bot-2 through meta-2 scrolls
+//                         up as one block
 //
 // All metas use fadeOut '0s' so each timestamp + thumbs row stays at
 // opacity 1 and translates up alongside its bot block during the next
@@ -48,9 +44,9 @@ export const timeline: TimelineConfig = {
 
     // user-1 turn-anchor (parallel): scroll runs concurrently with the user
     // bubble pop, so user-1 is anchored at the top from the first frame.
-    // y: -64 puts user-1 at messages-y 8 and lifts bot-1 + meta-0 above
-    // the padding-box edge.
-    { type: 'scroll', target: 'escalation-scroll', y: -64, duration: '0.5s', parallel: true },
+    // y: -76 lands user-1 at padding-box y=20 (the inset edge) and lifts
+    // bot-1 + meta-0 above the visible viewport.
+    { type: 'scroll', target: 'escalation-scroll', y: -76, duration: '0.5s', parallel: true },
     { type: 'user', id: 'user-1', duration: '0.4s', pause: '0.72s' },
 
     // AI bot offers escalation — 2 lines at the same streaming pace as
@@ -70,12 +66,13 @@ export const timeline: TimelineConfig = {
     { type: 'bot', id: 'bot-3', lines: [35], cps: 60, accel: 0.95, pause: '0.36s',
       meta: { id: 'meta-2', hold: '1.44s', fadeOut: '0s' } },
 
-    // user-2 turn-anchor (parallel): y: -304 hides EVERYTHING from bot-2
+    // user-2 turn-anchor (parallel): y: -372 hides EVERYTHING from bot-2
     // through meta-2 — bot-2, meta-1, divider, bot-3, and meta-2 all
-    // translate up together as one block — and lands user-2 at messages-y 7.
-    // 0.75s duration (vs the user-1 anchor's 0.5s) because this scroll
-    // covers ~240px of travel; the longer duration keeps the motion calm.
-    { type: 'scroll', target: 'escalation-scroll', y: -312, duration: '0.75s', parallel: true },
+    // translate up together as one block — and lands user-2 at padding-box
+    // y=20 (the inset edge). 0.75s duration (vs the user-1 anchor's 0.5s)
+    // because this scroll covers ~296px of travel; the longer duration
+    // keeps the motion calm.
+    { type: 'scroll', target: 'escalation-scroll', y: -372, duration: '0.75s', parallel: true },
     { type: 'user', id: 'user-2', duration: '0.4s', pause: '0.72s' },
 
     // Mark's reply — same human-agent cadence as bot-3. meta-3 holds for
