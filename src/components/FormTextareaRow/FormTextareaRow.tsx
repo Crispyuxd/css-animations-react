@@ -20,7 +20,10 @@ export function FormTextareaRow({
         <span id={placeholderId} className={styles.placeholder}>{placeholder}</span>
         <p id={valueId} className={styles.value}>
           {valueLines.map((line, i) => (
-            <span key={i} id={`${valueId}-line-${i + 1}`} className={styles.line}>{line}</span>
+            <span key={i} className={styles.lineWrap}>
+              <span id={`${valueId}-line-${i + 1}`} className={styles.line}>{line}</span>
+              <span id={`caret-${valueId}-line-${i + 1}`} className={styles.caret} aria-hidden="true" />
+            </span>
           ))}
         </p>
         <span data-ring className={styles.ring} aria-hidden="true" />
