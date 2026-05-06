@@ -106,11 +106,15 @@ export const timeline: TimelineConfig = {
     // so state-success appears as an empty container during this window.
     { type: 'transition', hide: 'state-form', show: 'state-success', duration: '0.7s', pause: '0.18s', morph: true },
 
-    // Bot text cross-fades from bot-2 to bot-3 IN PLACE, in parallel with
-    // bot-3's typewriter — `parallel: true` skips the cursor advance so the
-    // typewriter step below starts at the same cycle time. The text writes
-    // FIRST while the card area sits empty, then the success-card pops in.
-    { type: 'transition', hide: 'state-form-bot', show: 'state-success-bot', duration: '0.45s', slideOutY: '-4px', parallel: true },
+    // Bot-2 backspaces — same `steps()` cadence as the type-in but in reverse,
+    // so the eye reads it as the agent retracting its previous line before
+    // committing to the success message. ~64 cps gives a brisk erase.
+    { type: 'untype', target: 'bot-2-line-1', duration: '0.45s', pause: '0.05s' },
+
+    // Wrapper swap is purely an opacity flip — bot-3's lines are still clipped
+    // by their own typewriter, so the visible content arrives via `bot-3`
+    // below. `parallel: true` keeps cursor on the typewriter's start frame.
+    { type: 'transition', hide: 'state-form-bot', show: 'state-success-bot', duration: '0.05s', slideOutY: '0px', parallel: true },
     // Bot success follow-up — calm pace with gentle decay
     { type: 'bot', id: 'bot-3', lines: [42, 52], cps: 50, accel: 0.92, pause: '0.3s' },
 

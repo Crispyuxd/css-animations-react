@@ -30,6 +30,12 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   // Each waypoint with `mode: 'text'` swaps the inner icon at click time.
   const cursorIconData: Record<string, Array<{ pct: string; opacity: number }>> = {};
 
+  // Aggregator for typewriter lines (array-lines bot mode). We defer keyframe
+  // emission so a later `untype` step can extend the same keyframe with
+  // backspace stops — running two animations on `clip-path` would conflict,
+  // so a single keyframe per line is the only correct approach.
+  const lineTypeData: Record<string, { chars: number; lsMs: number; leMs: number; bsMs?: number; beMs?: number }> = {};
+
   // Anticipation pulse on click targets — the receiving element subtly
   // scales as the cursor arrives. Composite-only (transform). Disney-12
   // anticipation principle: target acknowledges incoming intent.
@@ -92,15 +98,10 @@ export function generateTimelineCSS(config: TimelineConfig): string {
           const chars = Math.max(1, charCounts[i]);
           const lineCps = baseCps * Math.pow(accel, i);
           const lineDurMs = (chars / lineCps) * 1000;
-          const ls = pct(lineCursorMs);
-          const le = pct(lineCursorMs + lineDurMs);
           const lineId = `${step.id}-line-${i + 1}`;
-          rules.push(`@keyframes tw-${lineId} {
-  0% { clip-path: inset(0 100% 0 0); animation-timing-function: linear; }
-  ${ls}% { clip-path: inset(0 100% 0 0); animation-timing-function: steps(${chars}, end); }
-  ${le}%, 100% { clip-path: inset(0 0% 0 0); }
-}`);
-          rules.push(`#${lineId} { animation: tw-${lineId} ${cycleStr} infinite both; }`);
+          // Defer tw-${lineId} keyframe emission — a later `untype` step may
+          // extend it with backspace stops. Emitted in the post-loop sweep.
+          lineTypeData[lineId] = { chars, lsMs: lineCursorMs, leMs: lineCursorMs + lineDurMs };
           if (step.caret) {
             const lsP = pctP(lineCursorMs);
             const leP = pctP(lineCursorMs + lineDurMs);
@@ -358,6 +359,18 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       cursor += dur + parseMs(step.pause || '0s');
     }
 
+    else if (step.type === 'untype') {
+      const dur = parseMs(step.duration || '0.5s');
+      const data = lineTypeData[step.target];
+      if (data) {
+        data.bsMs = cursor;
+        data.beMs = cursor + dur;
+      } else {
+        console.warn(`[timeline] untype target "${step.target}" not in tracked typewriter lines`);
+      }
+      cursor += dur + parseMs(step.pause || '0s');
+    }
+
     else if (step.type === 'deselect') {
       const dur = parseMs(step.duration || '0.2s');
       const endPct = pct(cursor + dur);
@@ -483,6 +496,29 @@ export function generateTimelineCSS(config: TimelineConfig): string {
     const frameStrs = stops.map(s => `${s.pct} { opacity: ${s.selected ? 1 : 0}; }`);
     rules.push(`@keyframes sel-${id} {\n  ${frameStrs.join('\n  ')}\n}`);
     rules.push(`#${id} [data-ring] { animation: sel-${id} ${cycleStr} linear infinite both; will-change: opacity; }`);
+  }
+
+  // Emit deferred typewriter line keyframes. With an `untype` step the same
+  // keyframe carries both type-in (steps→reveal) and type-out (steps→hide)
+  // stops, so a single animation owns clip-path end-to-end.
+  for (const [lineId, d] of Object.entries(lineTypeData)) {
+    const ls = pct(d.lsMs);
+    const le = pct(d.leMs);
+    const stops: string[] = [
+      `0% { clip-path: inset(0 100% 0 0); animation-timing-function: linear; }`,
+      `${ls}% { clip-path: inset(0 100% 0 0); animation-timing-function: steps(${d.chars}, end); }`,
+    ];
+    if (d.bsMs !== undefined && d.beMs !== undefined) {
+      const bs = pct(d.bsMs);
+      const be = pct(d.beMs);
+      stops.push(`${le}% { clip-path: inset(0 0% 0 0); animation-timing-function: linear; }`);
+      stops.push(`${bs}% { clip-path: inset(0 0% 0 0); animation-timing-function: steps(${d.chars}, end); }`);
+      stops.push(`${be}%, 100% { clip-path: inset(0 100% 0 0); }`);
+    } else {
+      stops.push(`${le}%, 100% { clip-path: inset(0 0% 0 0); }`);
+    }
+    rules.push(`@keyframes tw-${lineId} {\n  ${stops.join('\n  ')}\n}`);
+    rules.push(`#${lineId} { animation: tw-${lineId} ${cycleStr} infinite both; }`);
   }
 
   // stackFadeCycle

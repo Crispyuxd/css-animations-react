@@ -30,7 +30,8 @@ export type TimelineStep =
   | { type: 'select'; id: string; duration?: TimeValue; pause?: TimeValue }
   | { type: 'transition'; hide: string; show: string; duration?: TimeValue; pause?: TimeValue; slideOutY?: string; morph?: boolean; parallel?: boolean }
   | { type: 'scroll'; target: string; y: number; duration?: TimeValue; pause?: TimeValue }
-  | { type: 'deselect'; target: string; duration?: TimeValue; pause?: TimeValue };
+  | { type: 'deselect'; target: string; duration?: TimeValue; pause?: TimeValue }
+  | { type: 'untype'; target: string; duration?: TimeValue; pause?: TimeValue };
 
 export interface TimelineConfig {
   cycle: TimeValue;
