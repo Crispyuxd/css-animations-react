@@ -21,40 +21,34 @@ export function DebugScrubber() {
   // Always enabled — WCAG 2.2.2 needs pause/stop on every demo, not just ?debug.
   const enabled = true;
 
-  // Detect the cycle length once animations are running
+  // Sample the master cycle every frame: the longest-running animation on the
+  // page is the demo loop; transient transitions (shorter durations) must not
+  // hijack the cycle length or the slider position.
   useEffect(() => {
-    if (!enabled) return;
-    let cancelled = false;
-    const tryDetect = () => {
+    if (!enabled || paused) return;
+    const sample = () => {
       const anims = document.getAnimations();
-      const dur = anims.find((a) => typeof a.effect?.getTiming().duration === 'number')
-        ?.effect?.getTiming().duration as number | undefined;
-      if (typeof dur === 'number' && dur > 0) {
-        if (!cancelled) setCycleMs(dur);
-        return;
+      let maxDur = 0;
+      let masterCT = 0;
+      for (let i = 0; i < anims.length; i++) {
+        const d = anims[i].effect?.getTiming().duration;
+        if (typeof d === 'number' && d > maxDur) {
+          maxDur = d;
+          const ct = anims[i].currentTime;
+          masterCT = typeof ct === 'number' ? ct : 0;
+        }
       }
-      if (!cancelled) requestAnimationFrame(tryDetect);
-    };
-    tryDetect();
-    return () => { cancelled = true; };
-  }, [enabled]);
-
-  // Track time while playing
-  useEffect(() => {
-    if (!enabled || paused || cycleMs === 0) return;
-    const tick = () => {
-      const anims = document.getAnimations();
-      if (anims.length > 0) {
-        const ct = anims[0].currentTime;
-        if (typeof ct === 'number') setTime(ct);
+      if (maxDur > 0) {
+        setCycleMs(maxDur);
+        setTime(masterCT % maxDur);
       }
-      rafRef.current = requestAnimationFrame(tick);
+      rafRef.current = requestAnimationFrame(sample);
     };
-    rafRef.current = requestAnimationFrame(tick);
+    rafRef.current = requestAnimationFrame(sample);
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
-  }, [enabled, paused, cycleMs]);
+  }, [enabled, paused]);
 
   if (!enabled) return null;
 
