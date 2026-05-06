@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import styles from './DebugScrubber.module.css';
 
-// Visual timeline scrubber. Activate by appending `?debug` to the URL.
+// Visual timeline scrubber — always rendered to satisfy WCAG 2.2.2
+// (pause/stop/hide for moving content >5s). Append `?debug` to the URL for
+// the full scrubber + slider; otherwise only a compact play/pause shows.
 // Uses the Web Animations API to pause / seek every running CSS animation.
 export function DebugScrubber() {
-  const [enabled, setEnabled] = useState(false);
+  const [debug, setDebug] = useState(false);
   const [paused, setPaused] = useState(false);
   const [time, setTime] = useState(0);
   const [cycleMs, setCycleMs] = useState(0);
@@ -14,43 +16,39 @@ export function DebugScrubber() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    setEnabled(new URLSearchParams(window.location.search).has('debug'));
+    setDebug(new URLSearchParams(window.location.search).has('debug'));
   }, []);
+  // Always enabled — WCAG 2.2.2 needs pause/stop on every demo, not just ?debug.
+  const enabled = true;
 
-  // Detect the cycle length once animations are running
+  // Sample the master cycle every frame: the longest-running animation on the
+  // page is the demo loop; transient transitions (shorter durations) must not
+  // hijack the cycle length or the slider position.
   useEffect(() => {
-    if (!enabled) return;
-    let cancelled = false;
-    const tryDetect = () => {
+    if (!enabled || paused) return;
+    const sample = () => {
       const anims = document.getAnimations();
-      const dur = anims.find((a) => typeof a.effect?.getTiming().duration === 'number')
-        ?.effect?.getTiming().duration as number | undefined;
-      if (typeof dur === 'number' && dur > 0) {
-        if (!cancelled) setCycleMs(dur);
-        return;
+      let maxDur = 0;
+      let masterCT = 0;
+      for (let i = 0; i < anims.length; i++) {
+        const d = anims[i].effect?.getTiming().duration;
+        if (typeof d === 'number' && d > maxDur) {
+          maxDur = d;
+          const ct = anims[i].currentTime;
+          masterCT = typeof ct === 'number' ? ct : 0;
+        }
       }
-      if (!cancelled) requestAnimationFrame(tryDetect);
-    };
-    tryDetect();
-    return () => { cancelled = true; };
-  }, [enabled]);
-
-  // Track time while playing
-  useEffect(() => {
-    if (!enabled || paused || cycleMs === 0) return;
-    const tick = () => {
-      const anims = document.getAnimations();
-      if (anims.length > 0) {
-        const ct = anims[0].currentTime;
-        if (typeof ct === 'number') setTime(ct);
+      if (maxDur > 0) {
+        setCycleMs(maxDur);
+        setTime(masterCT % maxDur);
       }
-      rafRef.current = requestAnimationFrame(tick);
+      rafRef.current = requestAnimationFrame(sample);
     };
-    rafRef.current = requestAnimationFrame(tick);
+    rafRef.current = requestAnimationFrame(sample);
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
-  }, [enabled, paused, cycleMs]);
+  }, [enabled, paused]);
 
   if (!enabled) return null;
 
@@ -67,30 +65,34 @@ export function DebugScrubber() {
   };
 
   return (
-    <div className={styles.bar}>
+    <div className={`${styles.bar} ${debug ? styles.barDebug : styles.barCompact}`}>
       <button onClick={togglePause} className={styles.btn} type="button" aria-label={paused ? 'Play' : 'Pause'}>
         {paused ? '▶' : '⏸'}
       </button>
-      <input
-        type="range"
-        min={0}
-        max={cycleMs || 0}
-        step={10}
-        value={time}
-        onChange={(e) => seek(Number(e.target.value))}
-        onMouseDown={() => {
-          if (!paused) {
-            document.getAnimations().forEach((a) => a.pause());
-            setPaused(true);
-          }
-        }}
-        className={styles.slider}
-        disabled={cycleMs === 0}
-      />
-      <span className={styles.time}>
-        <span className={styles.label}>t </span>
-        {(time / 1000).toFixed(2)}s / {(cycleMs / 1000).toFixed(0)}s
-      </span>
+      {debug && (
+        <>
+          <input
+            type="range"
+            min={0}
+            max={cycleMs || 0}
+            step={10}
+            value={time}
+            onChange={(e) => seek(Number(e.target.value))}
+            onMouseDown={() => {
+              if (!paused) {
+                document.getAnimations().forEach((a) => a.pause());
+                setPaused(true);
+              }
+            }}
+            className={styles.slider}
+            disabled={cycleMs === 0}
+          />
+          <span className={styles.time}>
+            <span className={styles.label}>t </span>
+            {(time / 1000).toFixed(2)}s / {(cycleMs / 1000).toFixed(0)}s
+          </span>
+        </>
+      )}
     </div>
   );
 }

@@ -1,7 +1,13 @@
 .userRow {
+  position: relative;
   display: flex;
   justify-content: flex-end;
   padding-left: 32px;
+  /* Breathing room above + below the user bubble — gives the bubble a clear
+     "turn boundary" and matches the anchor offset used by the engine to land
+     it right at the top of the visible area. */
+  margin-top: 12px;
+  margin-bottom: 12px;
   opacity: 0;
   transform: translate3d(0, 20px, 0) scale(0.85);
   transform-origin: bottom right;

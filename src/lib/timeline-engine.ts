@@ -30,6 +30,11 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   // Each waypoint with `mode: 'text'` swaps the inner icon at click time.
   const cursorIconData: Record<string, Array<{ pct: string; opacity: number }>> = {};
 
+  // Anticipation pulse on click targets — the receiving element subtly
+  // scales as the cursor arrives. Composite-only (transform). Disney-12
+  // anticipation principle: target acknowledges incoming intent.
+  const pulseData: Record<string, Array<{ pct: string; scale: number }>> = {};
+
   const pct = (ms: number) => (ms / cycleMs * 100).toFixed(1);
 
   function emitMeta(m: { id: string; fadeIn?: string | number; hold?: string | number; fadeOut?: string | number; pause?: string | number; parallel?: boolean }) {
@@ -53,7 +58,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   ${inEnd}%, 100% { opacity: 1; }
 }`);
     }
-    rules.push(`#${m.id} { animation: anim-${m.id} ${cycleStr} var(--ease-out-quart) infinite both; }`);
+    rules.push(`#${m.id} { animation: anim-${m.id} ${cycleStr} var(--ease-out-quart) infinite both; will-change: opacity; }`);
     if (m.parallel) {
       // Advance only through fadeIn so the next step starts after meta is fully visible
       cursor += fadeIn;
@@ -140,7 +145,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   0%, ${startPct}% { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.85); }
   ${endPct}%, 100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }`);
-      rules.push(`#${step.id} { animation: pop-${step.id} ${cycleStr} var(--ease-pop) infinite both; }`);
+      rules.push(`#${step.id} { animation: pop-${step.id} ${cycleStr} var(--ease-pop) infinite both; will-change: transform, opacity; }`);
       cursor += dur + parseMs(step.pause || '0s');
     }
 
@@ -151,7 +156,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   0%, ${startPct}% { opacity: 0; }
   ${endPct}%, 100% { opacity: 1; }
 }`);
-      rules.push(`#${step.id} { animation: fade-${step.id} ${cycleStr} var(--ease-out-quart) infinite both; }`);
+      rules.push(`#${step.id} { animation: fade-${step.id} ${cycleStr} var(--ease-out-quart) infinite both; will-change: opacity; }`);
       cursor += dur + parseMs(step.pause || '0s');
     }
 
@@ -179,7 +184,23 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   ${endPct}%, 100% { opacity: 1; transform: translateY(0); }
 }`);
       }
-      rules.push(`#${step.id} { animation: show-${step.id} ${cycleStr} var(--ease-out-quart) infinite both; }`);
+      rules.push(`#${step.id} { animation: show-${step.id} ${cycleStr} var(--ease-out-quart) infinite both; will-change: transform, opacity; }`);
+
+      // Shimmer overlay — radial sweep that fires alongside the widget's
+      // entry. Targets a child [data-shimmer] element so the parent's existing
+      // transform stays untouched. Used for success/confirmation moments.
+      if (step.shimmer) {
+        const shimmerStart = pct(cursor);
+        const shimmerPeak = pct(cursor + dur * 0.55);
+        const shimmerEnd = pct(cursor + dur + parseMs('0.35s'));
+        rules.push(`@keyframes shimmer-${step.id} {
+  0%, ${shimmerStart}% { opacity: 0; transform: scale(0.4); }
+  ${shimmerPeak}% { opacity: 1; transform: scale(1); }
+  ${shimmerEnd}%, 100% { opacity: 0; transform: scale(1.7); }
+}`);
+        rules.push(`#${step.id} [data-shimmer] { animation: shimmer-${step.id} ${cycleStr} var(--ease-travel) infinite both; will-change: transform, opacity; }`);
+      }
+
       cursor += dur + parseMs(step.pause || '0s');
     }
 
@@ -204,23 +225,29 @@ export function generateTimelineCSS(config: TimelineConfig): string {
 
       let c = cursor;
 
+      // Position via transform: translate3d (S-tier, compositor-only) instead
+      // of left/top (D-tier, layout per frame). DemoCursor's static CSS is
+      // anchored at top:0; left:0 so the transform is from offsetParent origin.
+      const pos = (x: number, y: number, s: number) =>
+        `transform: translate3d(${x}px, ${y}px, 0) scale(${s});`;
+
       if (!data.initialized) {
         const appear = parseMs(step.appear || '0.3s');
         const startX = step.startX ?? ((waypoints[0]?.x ?? 0) + 60);
         const startY = step.startY ?? ((waypoints[0]?.y ?? 0) + 40);
-        data.frames.push(`0%, ${pct(c)}% { opacity: 0; left: ${startX}px; top: ${startY}px; transform: scale(1); }`);
+        data.frames.push(`0%, ${pct(c)}% { opacity: 0; ${pos(startX, startY, 1)} }`);
         c += appear;
-        data.frames.push(`${pct(c)}% { opacity: 1; left: ${startX}px; top: ${startY}px; transform: scale(1); }`);
+        data.frames.push(`${pct(c)}% { opacity: 1; ${pos(startX, startY, 1)} }`);
         data.lastX = startX;
         data.lastY = startY;
         data.initialized = true;
       } else {
         // Cursor was faded out at end of previous step. Hold hidden at last
         // position, then fade back in for this step.
-        data.frames.push(`${pct(c)}% { opacity: 0; left: ${data.lastX}px; top: ${data.lastY}px; transform: scale(1); }`);
+        data.frames.push(`${pct(c)}% { opacity: 0; ${pos(data.lastX, data.lastY, 1)} }`);
         const appear = parseMs(step.appear || '0.18s');
         c += appear;
-        data.frames.push(`${pct(c)}% { opacity: 1; left: ${data.lastX}px; top: ${data.lastY}px; transform: scale(1); }`);
+        data.frames.push(`${pct(c)}% { opacity: 1; ${pos(data.lastX, data.lastY, 1)} }`);
       }
 
       for (const wp of waypoints) {
@@ -231,7 +258,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
         const wy = wp.y ?? 0;
 
         c += travel;
-        data.frames.push(`${pct(c)}% { opacity: 1; left: ${wx}px; top: ${wy}px; transform: scale(1); }`);
+        data.frames.push(`${pct(c)}% { opacity: 1; ${pos(wx, wy, 1)} }`);
         // At click moment, instantly swap icon if waypoint specifies a mode.
         const mode = wp.mode || 'pointer';
         const beforePct = pct(Math.max(c - 50, 0));
@@ -240,7 +267,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
         cursorIconData[textIconId].push({ pct: `${beforePct}%`, opacity: 0 });
         cursorIconData[textIconId].push({ pct: `${pct(c)}%`, opacity: mode === 'text' ? 1 : 0 });
         c += click;
-        data.frames.push(`${pct(c)}% { opacity: 1; left: ${wx}px; top: ${wy}px; transform: scale(0.85); }`);
+        data.frames.push(`${pct(c)}% { opacity: 1; ${pos(wx, wy, 0.85)} }`);
 
         if (wp.select) {
           // Record select-on. Aggregator emits one keyframe per target after
@@ -248,10 +275,20 @@ export function generateTimelineCSS(config: TimelineConfig): string {
           if (!selectionData[wp.select]) selectionData[wp.select] = [{ pct: '0%', selected: false }];
           selectionData[wp.select].push({ pct: `${pct(c)}%`, selected: false });
           selectionData[wp.select].push({ pct: `${pct(c + click)}%`, selected: true });
+
+          // Anticipation pulse: target scales 1 → 1.012 → 1 across the click
+          // moment. c here is the post-travel/pre-compress timestamp, so the
+          // pulse peaks coincident with the cursor's deepest press.
+          const pulseStart = Math.max(c - travel * 0.25, 0);
+          const pulseEnd = c + click * 2;
+          if (!pulseData[wp.select]) pulseData[wp.select] = [{ pct: '0%', scale: 1 }];
+          pulseData[wp.select].push({ pct: `${pct(pulseStart)}%`, scale: 1 });
+          pulseData[wp.select].push({ pct: `${pct(c)}%`, scale: 1.012 });
+          pulseData[wp.select].push({ pct: `${pct(pulseEnd)}%`, scale: 1 });
         }
 
         c += click;
-        data.frames.push(`${pct(c)}% { opacity: 1; left: ${wx}px; top: ${wy}px; transform: scale(1); }`);
+        data.frames.push(`${pct(c)}% { opacity: 1; ${pos(wx, wy, 1)} }`);
         c += wpPause;
         data.lastX = wx;
         data.lastY = wy;
@@ -262,7 +299,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       // it back in.
       const disappear = parseMs('0.18s');
       c += disappear;
-      data.frames.push(`${pct(c)}% { opacity: 0; left: ${data.lastX}px; top: ${data.lastY}px; transform: scale(1); }`);
+      data.frames.push(`${pct(c)}% { opacity: 0; ${pos(data.lastX, data.lastY, 1)} }`);
 
       cursor = c;
     }
@@ -308,27 +345,59 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       // replace its show animation with a combined show+hide
       const showInfo = widgetShowTimes[step.hide];
       const slideOutY = step.slideOutY || '-6px';
-      if (showInfo) {
-        rules.push(`@keyframes show-${step.hide} {
+
+      // smoothMode-style coordinated MORPH for state-* targets — both elements
+      // meet at scale 0.88 with opposite tilts and a soft blur, so the eye
+      // reads it as one shape transforming. Triggered only when `morph: true`
+      // is set on the step (forms uses this for state-form → state-success).
+      const morphMidPct = pct(cursor + dur * 0.55);
+      const morphShowStartPct = pct(cursor + dur * 0.30);
+
+      if (step.morph) {
+        if (showInfo) {
+          rules.push(`@keyframes show-${step.hide} {
+  0%, ${showInfo.startPct}% { opacity: 0; transform: translateY(${showInfo.slideY}) scale(0.99); }
+  ${showInfo.endPct}% { opacity: 1; transform: translateY(0) scale(1); }
+  ${startPct}% { opacity: 1; transform: scale(1) rotate(0deg); filter: blur(0); animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0); }
+  ${morphMidPct}% { opacity: 0; transform: scale(0.86) rotate(2deg); filter: blur(1.5px); }
+  ${endPct}%, 100% { opacity: 0; transform: scale(0.86) rotate(2deg); filter: blur(1.5px); }
+}`);
+        } else {
+          rules.push(`@keyframes hide-${step.hide} {
+  0%, ${startPct}% { opacity: 1; transform: scale(1) rotate(0deg); filter: blur(0); animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0); }
+  ${morphMidPct}% { opacity: 0; transform: scale(0.86) rotate(2deg); filter: blur(1.5px); }
+  ${endPct}%, 100% { opacity: 0; transform: scale(0.86) rotate(2deg); filter: blur(1.5px); }
+}`);
+          rules.push(`#${step.hide} { animation: hide-${step.hide} ${cycleStr} linear infinite both; will-change: transform, opacity, filter; }`);
+        }
+        rules.push(`@keyframes show-${step.show} {
+  0%, ${morphShowStartPct}% { opacity: 0; transform: scale(0.88) rotate(-1.5deg); filter: blur(1px); animation-timing-function: var(--ease-travel); }
+  ${endPct}%, 100% { opacity: 1; transform: scale(1) rotate(0deg); filter: blur(0); }
+}`);
+        rules.push(`#${step.show} { animation: show-${step.show} ${cycleStr} linear infinite both; will-change: transform, opacity, filter; }`);
+      } else {
+        // Legacy plain cross-fade
+        if (showInfo) {
+          rules.push(`@keyframes show-${step.hide} {
   0%, ${showInfo.startPct}% { opacity: 0; transform: translateY(${showInfo.slideY}); }
   ${showInfo.endPct}% { opacity: 1; transform: translateY(0); }
   ${startPct}% { opacity: 1; transform: translateY(0); }
   ${endPct}%, 100% { opacity: 0; transform: translateY(${slideOutY}); }
 }`);
-        // No need to push a new selector — the widget step already emitted #id { animation: show-id ... }
-      } else {
-        rules.push(`@keyframes hide-${step.hide} {
+        } else {
+          rules.push(`@keyframes hide-${step.hide} {
   0%, ${startPct}% { opacity: 1; transform: translateY(0); }
   ${endPct}%, 100% { opacity: 0; transform: translateY(${slideOutY}); }
 }`);
-        rules.push(`#${step.hide} { animation: hide-${step.hide} ${cycleStr} var(--ease-out-quart) infinite both; }`);
-      }
+          rules.push(`#${step.hide} { animation: hide-${step.hide} ${cycleStr} var(--ease-out-quart) infinite both; will-change: transform, opacity; }`);
+        }
 
-      rules.push(`@keyframes show-${step.show} {
+        rules.push(`@keyframes show-${step.show} {
   0%, ${startPct}% { opacity: 0; transform: translateY(8px); }
   ${endPct}%, 100% { opacity: 1; transform: translateY(0); }
 }`);
-      rules.push(`#${step.show} { animation: show-${step.show} ${cycleStr} var(--ease-out-quart) infinite both; }`);
+        rules.push(`#${step.show} { animation: show-${step.show} ${cycleStr} var(--ease-out-quart) infinite both; will-change: transform, opacity; }`);
+      }
       cursor += dur + parseMs(step.pause || '0s');
     }
   }
@@ -337,9 +406,9 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   // out), so the 100% stop matches that — no jump on cycle wrap.
   for (const [id, data] of Object.entries(cursorData)) {
     if (!data.initialized) continue;
-    data.frames.push(`100% { opacity: 0; left: ${data.lastX}px; top: ${data.lastY}px; transform: scale(1); }`);
+    data.frames.push(`100% { opacity: 0; transform: translate3d(${data.lastX}px, ${data.lastY}px, 0) scale(1); }`);
     rules.push(`@keyframes move-${id} {\n  ${data.frames.join('\n  ')}\n}`);
-    rules.push(`#${id} { animation: move-${id} ${cycleStr} var(--ease-out-quart) infinite both; }`);
+    rules.push(`#${id} { animation: move-${id} ${cycleStr} var(--ease-travel) infinite both; will-change: transform, opacity; }`);
   }
 
   // Emit aggregated scroll keyframes
@@ -347,7 +416,7 @@ export function generateTimelineCSS(config: TimelineConfig): string {
     data.stops.push({ pct: '100%', ty: data.lastY });
     const frameStrs = data.stops.map(s => `${s.pct} { transform: translateY(${s.ty}px); }`);
     rules.push(`@keyframes scroll-${id} {\n  ${frameStrs.join('\n  ')}\n}`);
-    rules.push(`#${id} { animation: scroll-${id} ${cycleStr} var(--ease-scroll) infinite both; }`);
+    rules.push(`#${id} { animation: scroll-${id} ${cycleStr} var(--ease-scroll) infinite both; will-change: transform; }`);
   }
 
   // Emit aggregated cursor-icon keyframes — pointer ↔ text I-beam swap.
@@ -359,16 +428,26 @@ export function generateTimelineCSS(config: TimelineConfig): string {
     rules.push(`#${id} { animation: ico-${id} ${cycleStr} linear infinite both; }`);
   }
 
-  // Emit aggregated selection (focus border) keyframes — fields turn dark
-  // when selected via cursor click, return to subtle when deselected.
-  const onShadow = 'inset 0 0 0 2px var(--text-heading)';
-  const offShadow = 'inset 0 0 0 1px var(--border-subtle)';
+  // Emit aggregated anticipation-pulse keyframes — target scales 1 → 1.012 → 1
+  // around each click. Composite-only (transform).
+  for (const [id, stops] of Object.entries(pulseData)) {
+    const last = stops[stops.length - 1];
+    stops.push({ pct: '100%', scale: last.scale });
+    const frameStrs = stops.map(s => `${s.pct} { transform: scale(${s.scale}); }`);
+    rules.push(`@keyframes pulse-${id} {\n  ${frameStrs.join('\n  ')}\n}`);
+    rules.push(`#${id} { animation: pulse-${id} ${cycleStr} var(--ease-out-quart) infinite both; will-change: transform; }`);
+  }
+
+  // Emit aggregated selection (focus ring) keyframes — composite-only opacity
+  // tween on a sibling [data-ring] overlay (the parent's natural border shows
+  // through when the overlay is at opacity 0). Replaces previous box-shadow
+  // animation on the parent (paint-tier).
   for (const [id, stops] of Object.entries(selectionData)) {
     const last = stops[stops.length - 1];
     stops.push({ pct: '100%', selected: last.selected });
-    const frameStrs = stops.map(s => `${s.pct} { box-shadow: ${s.selected ? onShadow : offShadow}; }`);
+    const frameStrs = stops.map(s => `${s.pct} { opacity: ${s.selected ? 1 : 0}; }`);
     rules.push(`@keyframes sel-${id} {\n  ${frameStrs.join('\n  ')}\n}`);
-    rules.push(`#${id} { animation: sel-${id} ${cycleStr} linear infinite both; }`);
+    rules.push(`#${id} [data-ring] { animation: sel-${id} ${cycleStr} linear infinite both; will-change: opacity; }`);
   }
 
   // stackFadeCycle
@@ -382,6 +461,19 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   ${fadeOutEnd}%, 100% { opacity: 0; }
 }`);
   rules.push(`.messagesStack { animation: stackFadeCycle ${cycleStr} linear infinite both; will-change: transform, opacity; }`);
+
+  // ChatCard cycle-wrap breath — subtle scale + opacity dip on the first and
+  // last 250ms of each cycle so the loop doesn't visibly snap when wrapping
+  // back to 0%. Uses Material-flat curve (no overshoot needed for this).
+  const breathInPct = pct(parseMs('0.25s'));
+  const breathOutStartPct = pct(cycleMs - parseMs('0.25s'));
+  rules.push(`@keyframes chatCardWrap {
+  0% { opacity: 0.94; transform: scale(0.992); }
+  ${breathInPct}% { opacity: 1; transform: scale(1); }
+  ${breathOutStartPct}% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.94; transform: scale(0.992); }
+}`);
+  rules.push(`.chatCard { animation: chatCardWrap ${cycleStr} cubic-bezier(0.4, 0, 0.2, 1) infinite both; will-change: transform, opacity; }`);
 
   return rules.join('\n');
 }

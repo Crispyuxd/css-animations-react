@@ -194,8 +194,8 @@ export function FileIcon() {
 
 export function CancelX() {
   return (
-    <svg width="16" height="16" viewBox="0 0 10.8333 10.8333" fill="none">
-      <path d="M10.0833 0.75L0.75 10.0833M0.75 0.75L10.0833 10.0833" stroke="#71717A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M12.6668 3.33325L3.3335 12.6666M3.3335 3.33325L12.6668 12.6666" stroke="#71717A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }

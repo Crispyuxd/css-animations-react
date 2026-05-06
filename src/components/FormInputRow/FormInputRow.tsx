@@ -19,6 +19,7 @@ export function FormInputRow({
       <div className={styles.field} id={`field-${valueId}`}>
         <span id={placeholderId} className={styles.placeholder}>{placeholder}</span>
         <span id={valueId} className={styles.value}>{value}</span>
+        <span data-ring className={styles.ring} aria-hidden="true" />
       </div>
     </div>
   );

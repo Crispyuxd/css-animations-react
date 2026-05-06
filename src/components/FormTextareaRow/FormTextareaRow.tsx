@@ -23,6 +23,7 @@ export function FormTextareaRow({
             <span key={i} id={`${valueId}-line-${i + 1}`} className={styles.line}>{line}</span>
           ))}
         </p>
+        <span data-ring className={styles.ring} aria-hidden="true" />
       </div>
     </div>
   );

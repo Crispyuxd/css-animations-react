@@ -3,7 +3,7 @@
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
   FormCard, FormInputRow, FormTextareaRow, AttachButton, AttachmentItem, CaseCreatedCard,
-  CTAButton, DemoCursor, DemoState, DebugScrubber,
+  CTAButton, DemoCursor, DemoState,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -87,7 +87,6 @@ export default function FormsDemo() {
         </MessagesStack>
         <ChatInput />
       </ChatCard>
-      <DebugScrubber />
     </>
   );
 }

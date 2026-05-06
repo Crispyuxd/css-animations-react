@@ -2,7 +2,7 @@
 
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
-  CategoriesWidget, PickerWidget, ProductSheet, SheetOverlay, CartWidget, OrderSuccessWidget, DemoCursor, DemoState, DebugScrubber,
+  CategoriesWidget, PickerWidget, ProductSheet, SheetOverlay, CartWidget, OrderSuccessWidget, DemoCursor, DemoState,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -108,7 +108,6 @@ export default function ShopifyDemo() {
         <DemoCursor id="cursor-sheet-2" />
       </ProductSheet>
     </ChatCard>
-    <DebugScrubber />
     </>
   );
 }

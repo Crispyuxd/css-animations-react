@@ -2,7 +2,7 @@
 
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
-  CTAButton, DebugScrubber,
+  CTAButton,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -28,7 +28,6 @@ export default function ButtonDemo() {
         </MessagesStack>
         <ChatInput />
       </ChatCard>
-      <DebugScrubber />
     </>
   );
 }
