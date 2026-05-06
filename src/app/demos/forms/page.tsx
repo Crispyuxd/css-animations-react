@@ -31,19 +31,11 @@ export default function FormsDemo() {
         <MessagesStack gap={20}>
           <div
             id="forms-scroll"
-            style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'stretch', width: 366 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 32, alignItems: 'stretch', width: 366 }}
           >
-            <BotMessage id="bot-1" lines={['Hey, how can I help?']} meta={<MetaRow id="meta-0" />} />
+            <BotMessage id="bot-1" lines={['Hey, how can I help?']} meta={<MetaRow id="meta-0" positioned={false} gap={8} />} />
 
-            {/* marginTop 26 + marginBottom 0 — the marginTop preserves user-1's
-                offsetTop at 56 (so the 8-12px header gap math still holds with
-                a -67 anchor scroll), while marginBottom 0 plus the smaller
-                forms-scroll flex gap (10 instead of 20) tightens the user-1
-                ↔ bot-2 visible gap to ~10px. The compounded gap reduction
-                shifts the form-card up by ~13px in the layout, which is what
-                makes meta-1 fit within the visible area at the SAME scroll
-                value used for the user-1 turn anchor. */}
-            <UserMessage id="user-1" style={{ marginTop: 26, marginBottom: 0 }}>I want to submit a support case</UserMessage>
+            <UserMessage id="user-1" style={{ marginTop: 0, marginBottom: 0 }}>I want to submit a support case</UserMessage>
 
             {/* Bot text — bot-2 cross-fades to bot-3 in the same position so
                 the message "updates in place". Wrapper sizes to bot-2 (1 line)
@@ -66,9 +58,10 @@ export default function FormsDemo() {
 
             {/* Card — form-card morphs into success-card in place. Meta rows
                 live with the card so they sit below the active card visually.
-                marginTop: -2 keeps the visible bot-2 → card gap at ~8px now
-                that the forms-scroll flex gap is 10 (instead of 20). */}
-            <div style={{ position: 'relative', width: '100%', marginTop: -2 }}>
+                marginTop: -12 trims the inter-element gap (forms-scroll
+                gap=32) down to 20 — the form-card is the response widget
+                for bot-2 and reads as part of the same turn. */}
+            <div style={{ position: 'relative', width: '100%', marginTop: -12 }}>
               <DemoState id="state-form">
                 <FormCard id="form-card" title="Submit case">
                   <FormInputRow

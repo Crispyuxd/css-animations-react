@@ -18,12 +18,9 @@ export const timeline: TimelineConfig = {
     // pops in, so the bubble feels anchored at the top from the first frame
     // instead of appearing in place and then sliding up.
     //
-    // y: -67 hides the entire bot-1 block — text + the absolutely-positioned
-    // MetaRow ("Just now" + thumbs) which sits in the 20px gap below bot-1's
-    // text. -44 pulled the text out but left meta-0 visible at the top edge;
-    // an extra 20px lifts meta-0 above the viewport too so the bot turn feels
-    // like one cohesive block scrolling out together.
-    { type: 'scroll', target: 'forms-scroll', y: -67, duration: '0.5s', parallel: true },
+    // y: -76 lands user-1 at padding-box y=20 (the inset edge) and lifts
+    // bot-1 + meta-0 above the viewport.
+    { type: 'scroll', target: 'forms-scroll', y: -76, duration: '0.5s', parallel: true },
 
     // User asks — pops in concurrently with the scroll above
     { type: 'user', id: 'user-1', duration: '0.54s', pause: '0.36s' },
@@ -31,12 +28,13 @@ export const timeline: TimelineConfig = {
     // Bot offers form (typewriter types in below user-1, no scroll change)
     { type: 'bot', id: 'bot-2', lines: [29], cps: 45, accel: 0.9, pause: '0.36s' },
 
-    // No camera pan at form pop-up — same -67 scroll as the turn-anchor so
-    // user-1 stays put when the form arrives (no shift / no clip). The
-    // tightened forms-scroll gap (10 instead of 20) and the user-1 margin
-    // adjustments shift the form-card high enough in the layout that meta-1
-    // ("Just now") fits within the visible area at the same -67 anchor.
-    { type: 'scroll', target: 'forms-scroll', y: -67, duration: '0.55s', parallel: true },
+    // Camera pans down at form pop-up to anchor meta-1 ("Just now" + thumbs)
+    // at the content-box bottom edge with the base-height form (438). With
+    // meta-1's offsetTop in #forms-scroll = 193 + 438 + 12 = 643 (top) and
+    // height 16, scrollY = 536 − 659 = −123. user-1 fully scrolls off the
+    // top (it's no longer the focus during form interaction); the form-card
+    // and meta row stay fully visible above the chat input.
+    { type: 'scroll', target: 'forms-scroll', y: -123, duration: '0.55s', parallel: true },
 
     // Form card slides in below bot-2. user-1 stays at the top edge with the
     // same 12px header gap as the initial turn-anchor — the camera pans down
@@ -87,12 +85,13 @@ export const timeline: TimelineConfig = {
       rest: { travel: '0.25s' },
     },
 
-    // Scroll deeper so the form's bottom (with attachments + Submit) is
-    // clearly visible. With both attachments rendered the form-card is
-    // ~510px tall — -139 lifts the card up enough that its bottom border
-    // (and the meta-1 row below it) sit clearly within the visible area,
-    // without clipping the card's top edge.
-    { type: 'scroll', target: 'forms-scroll', y: -139, duration: '0.5s', pause: '0s' },
+    // Scroll deeper to anchor meta-1 ("Just now" + thumbs) at the
+    // content-box bottom — its bottom edge is flush with the 20px bottom
+    // inset above the chat input, so the meta row sits fully visible
+    // instead of getting clipped. The form-card's top scrolls out of view
+    // (no longer the focus); the user's eye tracks the bottom half
+    // (Submit, attachments, meta) which stays anchored.
+    { type: 'scroll', target: 'forms-scroll', y: -195, duration: '0.5s', pause: '0s' },
 
     // Files appear into the now-roomier view. `collapse` zeroes each item's
     // layout footprint pre-show: height 0 + margin-top -16 cancels its
@@ -122,10 +121,10 @@ export const timeline: TimelineConfig = {
       ],
     },
 
-    // Camera pan runs IN PARALLEL with the morph below. The view glides from
-    // -113 → -64 (anchoring user-1 at the top) while the form-card morphs
-    // into the success-card simultaneously — one continuous motion.
-    { type: 'scroll', target: 'forms-scroll', y: -67, duration: '1.0s', parallel: true },
+    // Camera pan runs IN PARALLEL with the morph below. The view glides
+    // back to the user-1 anchor (-56, padding-box y=20) while the form-card
+    // morphs into the success-card simultaneously — one continuous motion.
+    { type: 'scroll', target: 'forms-scroll', y: -76, duration: '1.0s', parallel: true },
 
     // Form card MORPHS into the success card. `parallel: true` so the bot
     // text untype/swap/type below run DURING the morph — success text and
