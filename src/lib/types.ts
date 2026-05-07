@@ -25,7 +25,7 @@ export type TimelineStep =
   | { type: 'user'; id: string; duration?: TimeValue; pause?: TimeValue }
   | { type: 'meta'; id: string; fadeIn?: TimeValue; hold?: TimeValue; fadeOut?: TimeValue; pause?: TimeValue; parallel?: boolean }
   | { type: 'divider'; id: string; duration?: TimeValue; pause?: TimeValue }
-  | { type: 'widget'; id: string; duration?: TimeValue; pause?: TimeValue; slideY?: string; collapse?: { height: string; marginTop?: string }; shimmer?: boolean; ease?: string }
+  | { type: 'widget'; id: string; duration?: TimeValue; pause?: TimeValue; slideY?: string; collapse?: { height: string; marginTop?: string }; shimmer?: boolean; ease?: string; parallel?: boolean }
   | { type: 'cursor'; id: string; startX?: number; startY?: number; appear?: TimeValue; waypoints: CursorWaypoint[]; rest?: { x?: number; y?: number; travel?: TimeValue } }
   | { type: 'select'; id: string; duration?: TimeValue; pause?: TimeValue }
   | { type: 'transition'; hide: string; show: string; duration?: TimeValue; pause?: TimeValue; slideOutY?: string; morph?: boolean; parallel?: boolean }

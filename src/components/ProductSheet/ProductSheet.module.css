@@ -24,7 +24,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 4px;
+  padding: 8px;
   border-radius: 16px;
   width: 100%;
   box-sizing: border-box;
@@ -196,9 +196,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(9, 9, 11, 0.12);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: url('/shopify/overlay.png') center / cover no-repeat;
   opacity: 0;
   z-index: 15;
   pointer-events: none;

@@ -235,7 +235,11 @@ export function generateTimelineCSS(config: TimelineConfig): string {
         rules.push(`#${step.id} [data-shimmer] { animation: shimmer-${step.id} ${cycleStr} var(--ease-travel) infinite both; will-change: transform, opacity; }`);
       }
 
-      cursor += dur + parseMs(step.pause || '0s');
+      // `parallel: true` skips the cursor advance so the next widget runs at
+       // the same start time — used to sync overlay+sheet entries.
+      if (!step.parallel) {
+        cursor += dur + parseMs(step.pause || '0s');
+      }
     }
 
     else if (step.type === 'cursor') {
@@ -512,9 +516,17 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   }
 
   // Emit aggregated cursor keyframes. Cursor steps end with opacity 0 (faded
-  // out), so the 100% stop matches that — no jump on cycle wrap.
+  // out), so the 100% stop matches that — no jump on cycle wrap. EXCEPTION:
+  // if the last step left the cursor parked (rest position, opacity 1), hold
+  // that opacity until 96% then quick-fade to 0 in the final 4% of the cycle.
+  // Without the hold, the global cubic-bezier(0.4, 0, 0.2, 1) easing front-
+  // loads the opacity change between the last waypoint and 100%, making the
+  // cursor visibly drop right after the final click.
   for (const [id, data] of Object.entries(cursorData)) {
     if (!data.initialized) continue;
+    if (data.parked) {
+      data.frames.push(`96% { opacity: 1; transform: translate3d(${data.lastX}px, ${data.lastY}px, 0) scale(1); }`);
+    }
     data.frames.push(`100% { opacity: 0; transform: translate3d(${data.lastX}px, ${data.lastY}px, 0) scale(1); }`);
     rules.push(`@keyframes move-${id} {\n  ${data.frames.join('\n  ')}\n}`);
     // cubic-bezier(0.4, 0, 0.2, 1) — Material Design standard ease. Gentle
@@ -599,18 +611,42 @@ export function generateTimelineCSS(config: TimelineConfig): string {
 }`);
   rules.push(`.messagesStack { animation: stackFadeCycle ${cycleStr} linear infinite both; will-change: transform, opacity; }`);
 
-  // ChatCard cycle-wrap breath — subtle scale + opacity dip on the first and
-  // last 250ms of each cycle so the loop doesn't visibly snap when wrapping
-  // back to 0%. Uses Material-flat curve (no overshoot needed for this).
-  const breathInPct = pct(parseMs('0.25s'));
-  const breathOutStartPct = pct(cycleMs - parseMs('0.25s'));
-  rules.push(`@keyframes chatCardWrap {
-  0% { opacity: 0.94; transform: scale(0.992); }
-  ${breathInPct}% { opacity: 1; transform: scale(1); }
-  ${breathOutStartPct}% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0.94; transform: scale(0.992); }
-}`);
-  rules.push(`.chatCard { animation: chatCardWrap ${cycleStr} cubic-bezier(0.4, 0, 0.2, 1) infinite both; will-change: transform, opacity; }`);
+  // Post-pass: merge multiple `<selector> { animation: ... }` rules into a
+  // single comma-separated declaration so animations on the same element run
+  // side-by-side (e.g. pulse-btn-metcon + hide-btn-metcon both apply). CSS
+  // shorthand replacement would otherwise let the LAST `animation:` rule
+  // override prior ones, leaving the click target without its hide/pulse.
+  // Only single-line `<sel> { animation: V; [will-change: W;] }` rules are
+  // matched — keyframes blocks and other declarations pass through untouched.
+  const animRulePattern = /^\s*([^{}\n]+?)\s*\{\s*animation:\s*([^;]+);\s*(?:will-change:\s*([^;]+);\s*)?\}\s*$/;
+  type AnimEntry = { animations: string[]; willChange: Set<string> };
+  const animBySelector = new Map<string, AnimEntry>();
+  const merged: string[] = [];
+  for (const rule of rules) {
+    const m = rule.match(animRulePattern);
+    if (m) {
+      const selector = m[1].trim();
+      const animValue = m[2].trim();
+      const wc = m[3]?.trim();
+      if (!animBySelector.has(selector)) {
+        animBySelector.set(selector, { animations: [], willChange: new Set() });
+        merged.push(` ANIM:${selector}`);
+      }
+      const entry = animBySelector.get(selector)!;
+      entry.animations.push(animValue);
+      if (wc) wc.split(',').map(s => s.trim()).forEach(s => entry.willChange.add(s));
+    } else {
+      merged.push(rule);
+    }
+  }
+  for (let i = 0; i < merged.length; i++) {
+    if (merged[i].startsWith(' ANIM:')) {
+      const selector = merged[i].slice(' ANIM:'.length);
+      const entry = animBySelector.get(selector)!;
+      const wcStr = entry.willChange.size > 0 ? ` will-change: ${Array.from(entry.willChange).join(', ')};` : '';
+      merged[i] = `${selector} { animation: ${entry.animations.join(', ')};${wcStr} }`;
+    }
+  }
 
-  return rules.join('\n');
+  return merged.join('\n');
 }

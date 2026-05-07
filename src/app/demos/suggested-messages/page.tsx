@@ -15,29 +15,34 @@ export default function SuggestedMessagesDemo() {
     <>
       <ChatCard>
         <ChatHeader />
-        <MessagesStack gap={20}>
-          <BotMessage id="bot-1" lines={['Hey, how can I help?']} meta={<MetaRow id="meta-0" />} />
+        <MessagesStack>
+          <div
+            id="suggested-scroll"
+            style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'stretch', width: 366 }}
+          >
+            <BotMessage id="bot-1" lines={['Hey, how can I help?']} meta={<MetaRow id="meta-0" positioned={false} gap={8} />} />
 
-          <UserMessage id="user-1">What plans do you offer?</UserMessage>
+            <UserMessage id="user-1">What plans do you offer?</UserMessage>
 
-          <BotMessage
-            id="bot-2"
-            lines={[
-              'We offer four plans:',
-              { bullet: 'Free ($0/mo) with 50 message credits and 1 agent to' },
-              { indent: 'get started.' },
-              { bullet: 'Hobby ($40/mo) with 1,500 credits, advanced AI' },
-              { indent: 'models, and integrations.' },
-              { bullet: 'Standard ($150/mo) with 10,000 credits, 2 agents,' },
-              { indent: 'and advanced analytics.' },
-              { bullet: 'Pro ($500/mo) with 40,000 credits, 5 agents, and' },
-              { indent: 'priority support.' },
-              'All paid plans save 20% with yearly billing. We also offer',
-              'custom Enterprise plans for larger teams. Would you like',
-              'help choosing the right one?',
-            ]}
-            meta={<MetaRow id="meta-1" />}
-          />
+            <BotMessage
+              id="bot-2"
+              lines={[
+                'We offer four plans:',
+                { bullet: 'Free ($0/mo) with 50 message credits and 1 agent to' },
+                { indent: 'get started.' },
+                { bullet: 'Hobby ($40/mo) with 1,500 credits, advanced AI' },
+                { indent: 'models, and integrations.' },
+                { bullet: 'Standard ($150/mo) with 10,000 credits, 2 agents,' },
+                { indent: 'and advanced analytics.' },
+                { bullet: 'Pro ($500/mo) with 40,000 credits, 5 agents, and' },
+                { indent: 'priority support.' },
+                'All paid plans save 20% with yearly billing. We also offer',
+                'custom Enterprise plans for larger teams. Would you like',
+                'help choosing the right one?',
+              ]}
+              meta={<MetaRow id="meta-1" positioned={false} gap={8} />}
+            />
+          </div>
         </MessagesStack>
 
         <SuggestionChips id="chips-1">

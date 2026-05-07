@@ -90,11 +90,7 @@ export default function FormsDemo() {
               </DemoState>
 
               <DemoState id="state-success" overlay>
-                {/* 20px top spacer: bot-3's 2nd line (lh 1.4 × 14px ≈ 20px)
-                    extends down into the 20px flex gap above this wrapper —
-                    this margin restores the visual gap between the bot text
-                    and the success card so the spacing matches the form state. */}
-                <div style={{ marginTop: 20 }}>
+                <div style={{ marginTop: 12 }}>
                   <CaseCreatedCard id="success-card" caseId="#4244-424" />
                   <MetaRow id="meta-2" gap={12} />
                 </div>

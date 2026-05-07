@@ -1,6 +1,9 @@
 'use client';
 
-import { ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack, CalendarWidget, CallBooked, DemoCursor } from '@/components';
+import {
+  ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
+  CalendarWidget, CallBooked, DemoCursor, DemoState,
+} from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
 
@@ -22,52 +25,41 @@ export default function CalendarDemo() {
   return (
     <ChatCard>
       <ChatHeader />
-      <MessagesStack gap={20}>
-        <BotMessage id="bot-1" lines={['Hey, how can I help?']} meta={<MetaRow id="meta-0" />} />
+      <MessagesStack>
+        <div
+          id="calendar-scroll"
+          style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'stretch', width: 366 }}
+        >
+          <BotMessage id="bot-1" lines={['Hey, how can I help?']} meta={<MetaRow id="meta-0" positioned={false} gap={8} />} />
 
-        <UserMessage id="user-1">
-          I&apos;d like to book a demo
-        </UserMessage>
+          <UserMessage id="user-1">
+            I&apos;d like to book a demo
+          </UserMessage>
 
-        {/* Bot-2 block: contains both calendar state and booked state */}
-        <div style={{ position: 'relative' }}>
-          {/* State 1: bot text + calendar (visible first, hides on transition) */}
-          <div id="state-calendar" style={{ paddingRight: 32 }}>
-            <p id="bot-2" className="msg bot-msg" style={{
-              margin: 0, fontSize: 14, lineHeight: 1.4, letterSpacing: '-0.28px',
-              color: 'var(--text-heading)', fontWeight: 400,
-              clipPath: 'inset(0 100% 0 0)',
-            }}>
-              Sure, pick a time that works for you.
-            </p>
-            <div style={{ marginTop: 12 }}>
-              <CalendarWidget id="calendar-widget" days={days} timeRows={timeRows}>
-                <DemoCursor id="cursor" />
-              </CalendarWidget>
+          {/* Bot text wrapper — bot-2 cross-fades to bot-2-booked */}
+          <div style={{ position: 'relative', width: '100%' }}>
+            <div id="state-calendar-bot">
+              <BotMessage id="bot-2" lines={['Sure, pick a time that works for you.']} />
             </div>
-            <div style={{ marginTop: 12 }}>
-              <MetaRow id="meta-cal" positioned={false} />
+            <div id="state-booked-bot" style={{ position: 'absolute', top: 0, left: 0, right: 0, opacity: 0 }}>
+              <BotMessage id="bot-2-booked" lines={["Done! Here's what you scheduled."]} />
             </div>
           </div>
 
-          {/* State 2: bot text + call booked (overlays state-calendar) */}
-          <div id="state-booked" style={{
-            opacity: 0, paddingRight: 32,
-            position: 'absolute', top: 0, left: 0, right: 0,
-          }}>
-            <p id="bot-2-booked" style={{
-              margin: 0, fontSize: 14, lineHeight: 1.4, letterSpacing: '-0.28px',
-              color: 'var(--text-heading)', fontWeight: 400,
-              clipPath: 'inset(0 100% 0 0)',
-            }}>
-              Done! Here&apos;s what you scheduled.
-            </p>
-            <div style={{ marginTop: 12 }}>
+          {/* Card area — calendar morphs into call-booked. Cards sit 12px
+              below the bot text (internal-to-turn). */}
+          <div style={{ position: 'relative', width: '100%', marginTop: -8 }}>
+            <DemoState id="state-calendar">
+              <CalendarWidget id="calendar-widget" days={days} timeRows={timeRows}>
+                <DemoCursor id="cursor" />
+              </CalendarWidget>
+              <MetaRow id="meta-cal" positioned={false} gap={12} />
+            </DemoState>
+
+            <DemoState id="state-booked" overlay>
               <CallBooked id="call-booked" date="26th March, 2026 at 3:30 PM" />
-            </div>
-            <div style={{ marginTop: 12 }}>
-              <MetaRow id="meta-1" positioned={false} />
-            </div>
+              <MetaRow id="meta-1" positioned={false} gap={12} />
+            </DemoState>
           </div>
         </div>
       </MessagesStack>
