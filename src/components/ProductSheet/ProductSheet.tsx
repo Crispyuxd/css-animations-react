@@ -1,5 +1,5 @@
 import styles from './ProductSheet.module.css';
-import { CloseX, ChevronDown, ShoppingCart } from '@/icons';
+import { CloseX, ChevronDown, PlusIconWhite } from '@/icons';
 
 interface ProductSheetProps {
   id: string;
@@ -31,7 +31,7 @@ export function ProductSheet({ id, title, size, color, total, buttonId, children
               <span className={styles.totalAmount}>{total}</span>
             </div>
             <button id={buttonId} className={styles.addToCart} type="button">
-              <span className={styles.cartIcon}><ShoppingCart /></span>
+              <span className={styles.cartIcon}><PlusIconWhite /></span>
               Add to cart
             </button>
           </div>

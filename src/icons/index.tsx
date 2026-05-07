@@ -110,6 +110,14 @@ export function PlusIcon() {
   );
 }
 
+export function PlusIconWhite() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M9.99967 3.33325L9.99967 16.6666M16.6663 9.99992L3.33301 9.99992" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 export function ChevronDown() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

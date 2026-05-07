@@ -48,8 +48,28 @@ function offsetRelativeTo(el: HTMLElement, ancestor: HTMLElement): { x: number; 
   return { x, y };
 }
 
+// Bounding-rect-based resolver: works regardless of positioned-ancestor topology
+// between cursor and target (single shared cursor at chat-card level needs this
+// because targets across states and sheets don't share offsetParent chains).
+function rectRelativeTo(el: HTMLElement, ancestor: HTMLElement): { x: number; y: number; w: number; h: number } {
+  const elR = el.getBoundingClientRect();
+  const ancR = ancestor.getBoundingClientRect();
+  return { x: elR.left - ancR.left, y: elR.top - ancR.top, w: elR.width, h: elR.height };
+}
+
 function resolveCursorTargets(config: TimelineConfig): TimelineConfig {
   if (typeof document === 'undefined') return config;
+
+  // Pre-compute final scroll offsets per scrolled-container id. The cursor
+  // sits at chat-card level (outside scroll containers), so when it targets
+  // an element inside one we need to add the scroll's translate to compensate
+  // — otherwise it lands on the pre-scroll layout position.
+  const scrollOffsets: Record<string, { x: number; y: number }> = {};
+  for (const step of config.steps) {
+    if (step.type === 'scroll') {
+      scrollOffsets[step.target] = { x: 0, y: step.y };
+    }
+  }
 
   return {
     ...config,
@@ -72,8 +92,20 @@ function resolveCursorTargets(config: TimelineConfig): TimelineConfig {
           console.warn(`[timeline] cursor "${step.id}" target "${wp.target}" not in same offset tree`);
           return wp;
         }
-        const cx = offset.x + targetEl.offsetWidth / 2;
-        const cy = offset.y + targetEl.offsetHeight / 2;
+        let cx = offset.x + targetEl.offsetWidth / 2;
+        let cy = offset.y + targetEl.offsetHeight / 2;
+        // Add scroll compensation if target is descendant of any scrolled
+        // container. The scroll is applied via transform on that container,
+        // shifting all descendants visually by (x, y) but not affecting their
+        // offsetTop — so the cursor (outside the container) needs the offset
+        // applied manually.
+        for (const [scrollId, sOff] of Object.entries(scrollOffsets)) {
+          const scrollEl = document.getElementById(scrollId);
+          if (scrollEl && scrollEl !== targetEl && scrollEl.contains(targetEl)) {
+            cx += sOff.x;
+            cy += sOff.y;
+          }
+        }
         return {
           ...wp,
           x: Math.round(cx - CURSOR_HOTSPOT_X),
