@@ -46,3 +46,6 @@ next-env.d.ts
 
 # local debug screenshots from Figma audits
 .figma-screenshot-*.png
+
+# generated handover bundle (rebuild via scripts/build-handover.sh)
+widget-demos-handover/
