@@ -8,7 +8,24 @@
   gap: 16px;
   overflow: hidden;
 }
-.checkIcon { width: 24px; height: 24px; flex-shrink: 0; }
+.checkIcon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.shimmer {
+  position: absolute;
+  inset: -16px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.5) 0%, rgba(34, 197, 94, 0.18) 35%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: center;
+  z-index: -1;
+  will-change: transform, opacity;
+}
 .details { display: flex; flex-direction: column; gap: 4px; }
 .title { font-size: 14px; font-weight: 600; line-height: normal; letter-spacing: -0.28px; color: var(--text-heading); }
 .date { font-size: 14px; font-weight: 400; line-height: 20px; letter-spacing: -0.28px; color: #52525b; }
