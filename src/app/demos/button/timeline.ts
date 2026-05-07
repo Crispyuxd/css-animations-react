@@ -20,7 +20,7 @@ export const timeline: TimelineConfig = {
   metaFadeOut: '0.36s',
   steps: [
     // AI bot greets — meta-0 fadeOut '0s' so it scrolls up with bot-1
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 0.9, pause: '0.36s',
+    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s',
       meta: { id: 'meta-0', fadeOut: '0s' } },
 
     // user-1 turn-anchor (parallel): scroll runs concurrently with the
@@ -31,7 +31,7 @@ export const timeline: TimelineConfig = {
     { type: 'user', id: 'user-1', duration: '0.4s', pause: '0.72s' },
 
     // Bot replies — single line typewriter
-    { type: 'bot', id: 'bot-2', lines: [34], cps: 45, accel: 0.9, pause: '0.3s' },
+    { type: 'bot', id: 'bot-2', lines: [34], cps: 45, accel: 1, pause: '0.3s' },
 
     // CTA button slides in right after the bot text finishes
     { type: 'widget', id: 'btn-pricing', duration: '0.4s', pause: '0.3s' },

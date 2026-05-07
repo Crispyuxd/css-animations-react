@@ -12,7 +12,7 @@ export const timeline: TimelineConfig = {
     // meta-0 ("Just now" + thumbs) uses fadeOut '0s' so it stays visible
     // through the scroll and translates up alongside bot-1 instead of
     // fading out first.
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 0.9, pause: '0.36s', meta: { id: 'meta-0', fadeOut: '0s' } },
+    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s', meta: { id: 'meta-0', fadeOut: '0s' } },
 
     // Turn-anchor (parallel): the stack scrolls up at the same moment user-1
     // pops in, so the bubble feels anchored at the top from the first frame
@@ -26,7 +26,7 @@ export const timeline: TimelineConfig = {
     { type: 'user', id: 'user-1', duration: '0.54s', pause: '0.36s' },
 
     // Bot offers form (typewriter types in below user-1, no scroll change)
-    { type: 'bot', id: 'bot-2', lines: [29], cps: 45, accel: 0.9, pause: '0.36s' },
+    { type: 'bot', id: 'bot-2', lines: [29], cps: 45, accel: 1, pause: '0.36s' },
 
     // Camera pans down at form pop-up to anchor meta-1 ("Just now" + thumbs)
     // at the content-box bottom edge with the base-height form (438). With

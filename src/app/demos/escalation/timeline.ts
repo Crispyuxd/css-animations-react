@@ -26,7 +26,7 @@ import type { TimelineConfig } from '@/lib/types';
 // turn-block sliding out of view (matches forms-demo behavior).
 //
 // Bot voices (per the playbook recipe):
-//   AI assistant   — cps 45, accel 0.9   (streamed-token decay, "thinking pace")
+//   AI assistant   — cps 45, accel 1     (flat streaming pace, the dev-wide convention)
 //   Mark Kent      — cps 60, accel 0.95  (human keyboard rhythm, almost-flat decay)
 
 export const timeline: TimelineConfig = {
@@ -39,7 +39,7 @@ export const timeline: TimelineConfig = {
   steps: [
     // AI bot greets — 20 chars at streaming pace. meta-0 fadeOut '0s' so
     // it scrolls up *with* bot-1 at the user-1 anchor.
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 0.9, pause: '0.36s',
+    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s',
       meta: { id: 'meta-0', fadeOut: '0s' } },
 
     // user-1 turn-anchor (parallel): scroll runs concurrently with the user
@@ -51,7 +51,7 @@ export const timeline: TimelineConfig = {
 
     // AI bot offers escalation — 2 lines at the same streaming pace as
     // bot-1 to keep the assistant voice consistent. meta-1 fadeOut '0s'.
-    { type: 'bot', id: 'bot-2', lines: [54, 14], cps: 45, accel: 0.9, pause: '0.36s',
+    { type: 'bot', id: 'bot-2', lines: [54, 14], cps: 45, accel: 1, pause: '0.36s',
       meta: { id: 'meta-1', hold: '1.44s', fadeOut: '0s' } },
 
     // Divider arrives WITHOUT a scroll — fades in below bot-2 + meta-1 in

@@ -20,7 +20,7 @@ export const timeline: TimelineConfig = {
   metaFadeOut: '0.36s',
   steps: [
     // AI bot greets — meta-0 fadeOut '0s' so it scrolls up with bot-1
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 0.9, pause: '0.36s',
+    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s',
       meta: { id: 'meta-0', fadeOut: '0s', parallel: true } },
 
     // Suggestion chips slide in just after the timestamp registers
