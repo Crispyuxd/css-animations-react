@@ -1,0 +1,7 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Logo">
+<rect x="0.5" y="0.5" width="39" height="39" rx="7.5" fill="var(--fill-0, white)"/>
+<rect x="0.5" y="0.5" width="39" height="39" rx="7.5" stroke="var(--stroke-0, #E4E4E7)"/>
+<path id="Subtract" fill-rule="evenodd" clip-rule="evenodd" d="M31.229 17.3648L28.594 19.9999L31.229 22.6349V32H12.6682C10.8818 32 9.43362 30.5518 9.43359 28.7653V11.2347C9.43364 9.44825 10.8818 8 12.6682 8H31.229V17.3648ZM17.5706 12.8982C15.7842 12.8982 14.336 14.3465 14.336 16.1329V16.5803H14.335V24.3863H14.3996C14.697 25.8657 16.0037 26.9799 17.5706 26.9799H25.8458V22.4494H18.8655V17.4287H25.8458V12.8982H17.5706Z" fill="var(--fill-0, black)"/>
+</g>
+</svg>

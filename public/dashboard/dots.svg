@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 44 4" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Container">
+<circle id="Circle" cx="2" cy="2" r="2" fill="var(--fill-0, black)"/>
+<circle id="Circle_2" cx="10" cy="2" r="2" fill="var(--fill-0, #F4F4F5)"/>
+<circle id="Circle_3" cx="18" cy="2" r="2" fill="var(--fill-0, #F4F4F5)"/>
+<circle id="Circle_4" cx="26" cy="2" r="2" fill="var(--fill-0, #F4F4F5)"/>
+<circle id="Circle_5" cx="34" cy="2" r="2" fill="var(--fill-0, #F4F4F5)"/>
+<circle id="Circle_6" cx="42" cy="2" r="2" fill="var(--fill-0, #F4F4F5)"/>
+</g>
+</svg>
