@@ -24,67 +24,92 @@ barrel but not used here.
 
 ## How we ship the widgets — two options we considered
 
-### Option A — npm package (the one we chose, simulated)
+### Option A — npm package
 
-Publish the widgets as an npm package (e.g., `@chatbase/widget-demos`).
-The owner runs `npm install @chatbase/widget-demos` and imports them:
+Publish the widgets as an npm package (or git-URL install). The owner
+runs `npm install @chatbase/widget-demos` and imports:
 
 ```ts
 import { StripeDemo } from '@chatbase/widget-demos';
 ```
 
-We did not actually publish to npm yet. Instead, we **faked** the package
-locally:
+Updates ship via `npm update`. One-step, single source of truth,
+versionable.
 
-- `src/widgets-package/index.ts` is a tiny barrel file that re-exports
-  `StripeDemo` and `LeadsDemo` from the existing `src/app/demos/*` source.
-- `tsconfig.json` adds a path alias so `@chatbase/widget-demos` resolves
-  to that local barrel.
+### Option B — code-files handover (zip)
 
-The dashboard then imports exactly like a real npm consumer would. When we
-do publish, the import line in the consumer's code does not change.
+Zip up the demo source files (`widget-demos-vX.Y.zip`). The owner
+unzips into their repo and imports from a local path:
 
-### Option B — copy-paste the code files
+```ts
+import { StripeDemo } from '@/widget-demos';
+```
 
-Hand the owner a zip of our demo source files. They paste them into their
-repo and import from local paths.
+Updates ship by sending a new zip — they replace the old folder.
 
-## Why we picked the npm option
+## What we picked: Option B (zip handover)
 
-In simple words:
+For our specific situation we went with Option B. Reasons:
 
-1. **Updates are one-step.** We publish a new version → they run
-   `npm update`. That's it. No re-handover, no copy-paste, no merge
-   conflicts.
+1. **Updates are infrequent.** This is not a package we will ship every
+   week. Two-three drops a year, on demand. The npm publish workflow
+   would be overhead for almost no win.
+2. **Small, known consumer list.** A handful of dashboards, not the open
+   public. We can hand-deliver a zip and know everyone got it.
+3. **No registry hosting cost or auth juggling.** No npm account,
+   no GitHub Packages tokens, no private-registry plumbing.
+4. **The consumer's project setup is unchanged.** They drop in a
+   folder + import the token CSS. Path alias they probably already have.
 
-2. **One source of truth.** The widget code lives in our repo only.
-   Bugs we fix here go out to every consumer the next time they update.
-   With copy-paste, the moment they paste the files, they own a frozen
-   copy that drifts away from ours.
+The downsides we are accepting:
 
-3. **Versioning.** They can pin to a specific version (e.g.
-   `^1.2.0`) and choose when to upgrade. Copy-paste has no version concept
-   — they would have to track manually which "drop" they're on.
+- No automatic version pinning per consumer. We rely on filenames
+  (`widget-demos-v1.0.0.zip`) and a `CHANGELOG.md` inside the bundle.
+- If a consumer tweaks files locally, our next drop will overwrite
+  their edits. Tell them not to tweak inside the package folder.
+- No `npm outdated` to check who's stale. If we need that, we can move
+  to npm later — the import surface stays the same.
 
-4. **Smaller, cleaner public API.** The barrel file is a literal list of
-   what we export. Anything not listed there is not reachable from the
-   package. Copy-paste exposes the entire folder structure, including
-   internals we did not mean to expose.
+If updates become weekly or the consumer count grows, we should switch
+to Option A. The barrel file (`scripts/handover-templates/index.ts`) is
+already npm-shaped, so no rewrite is needed when that day comes.
 
-5. **The prototype already proved it works.** Importing through the
-   simulated package surface caught any hidden dependency issues here,
-   in our repo, before publishing — instead of after.
+## How the handover bundle is built
 
-## Why we did not pick the copy-paste option
+`scripts/build-handover.sh` regenerates `widget-demos-handover/` and
+`widget-demos-vX.Y.zip` from the canonical source in `src/`. The
+`widget-demos-handover/` folder is gitignored — only the zip is
+checked in as a release artifact.
 
-It is fine for a one-time demo, but breaks down the moment we need to
-ship a fix or a new demo:
+The zip contains:
 
-- We would have to re-send the files to every owner manually.
-- Each owner would have to re-paste, possibly resolving merge conflicts
-  with their own edits.
-- Easy for an owner to silently keep an old, buggy version forever.
-- Two divergent codebases over time — a maintenance nightmare.
+```
+widget-demos/
+├── README.md             How to integrate
+├── INTEGRATION.md        Detailed setup steps
+├── package.json          Peer deps + entry points
+├── index.ts              Public barrel — what consumers import from
+├── styles/tokens.css     Design tokens (must be imported once at app root)
+├── components/           All 32 widget primitives
+├── hooks/useTimeline.ts  Timeline-engine hook
+├── lib/                  Engine internals
+└── demos/                11 ready-to-render demo components
+```
+
+Templates for the four top-level docs/manifests live at
+`scripts/handover-templates/` and are copied verbatim into the bundle —
+edit them there if the public surface changes.
+
+## Why the prototype still uses an npm-shaped import
+
+Inside this repo, `/dashboard` imports through `@chatbase/widget-demos`
+(faked via a tsconfig path alias to `src/widgets-package/`). We kept
+that even though we are shipping a zip, because:
+
+- It validates that the public surface is small and self-contained
+  (anything missing from `index.ts` would fail to import).
+- If we ever flip to npm hosting, the prototype already shows what the
+  consumer experience looks like.
 
 ## What the prototype validates
 
