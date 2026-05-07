@@ -31,6 +31,12 @@ export default function Home() {
       <Link href="/demos/forms" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
         Forms
       </Link>
+      <Link href="/demos/leads" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
+        Leads
+      </Link>
+      <Link href="/demos/stripe" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
+        Stripe
+      </Link>
     </div>
   );
 }

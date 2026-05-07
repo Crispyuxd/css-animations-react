@@ -8,7 +8,7 @@ export function CaseCreatedCard({
 }: {
   id?: string;
   title?: string;
-  caseId: string;
+  caseId: React.ReactNode;
 }) {
   return (
     <div id={id} className={styles.card}>
