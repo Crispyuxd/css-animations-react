@@ -30,7 +30,7 @@ import type { TimelineConfig } from '@/lib/types';
 //   Mark Kent      — cps 60, accel 0.95  (human keyboard rhythm, almost-flat decay)
 
 export const timeline: TimelineConfig = {
-  cycle: '22s',
+  cycle: '17.5s',
   introHold: '0.54s',
   outroFade: '0.9s',
   metaFadeIn: '0.36s',
@@ -75,10 +75,10 @@ export const timeline: TimelineConfig = {
     { type: 'scroll', target: 'escalation-scroll', y: -372, duration: '0.75s', parallel: true },
     { type: 'user', id: 'user-2', duration: '0.4s', pause: '0.72s' },
 
-    // Mark's reply — same human-agent cadence as bot-3. meta-3 holds for
-    // 3.6s at the end of the cycle (matches the playbook's end-of-cycle
-    // hold beat) so the final frame breathes before the loop wraps.
+    // Mark's reply — same human-agent cadence as bot-3. meta-3 has no hold
+    // (fadeOut:0 makes hold a no-op anyway); the end-of-cycle breathing room
+    // is the dwell gap before stackFadeCycle starts the outro.
     { type: 'bot', id: 'bot-4', lines: [50], cps: 60, accel: 0.95, pause: '0.36s',
-      meta: { id: 'meta-3', hold: '3.6s', fadeOut: '0s' } },
+      meta: { id: 'meta-3', hold: '0s', fadeOut: '0s' } },
   ],
 };

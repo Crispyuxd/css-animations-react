@@ -611,19 +611,6 @@ export function generateTimelineCSS(config: TimelineConfig): string {
 }`);
   rules.push(`.messagesStack { animation: stackFadeCycle ${cycleStr} linear infinite both; will-change: transform, opacity; }`);
 
-  // ChatCard cycle-wrap breath — subtle scale + opacity dip on the first and
-  // last 250ms of each cycle so the loop doesn't visibly snap when wrapping
-  // back to 0%. Uses Material-flat curve (no overshoot needed for this).
-  const breathInPct = pct(parseMs('0.25s'));
-  const breathOutStartPct = pct(cycleMs - parseMs('0.25s'));
-  rules.push(`@keyframes chatCardWrap {
-  0% { opacity: 0.94; transform: scale(0.992); }
-  ${breathInPct}% { opacity: 1; transform: scale(1); }
-  ${breathOutStartPct}% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0.94; transform: scale(0.992); }
-}`);
-  rules.push(`.chatCard { animation: chatCardWrap ${cycleStr} cubic-bezier(0.4, 0, 0.2, 1) infinite both; will-change: transform, opacity; }`);
-
   // Post-pass: merge multiple `<selector> { animation: ... }` rules into a
   // single comma-separated declaration so animations on the same element run
   // side-by-side (e.g. pulse-btn-metcon + hide-btn-metcon both apply). CSS

@@ -12,7 +12,7 @@ import type { TimelineConfig } from '@/lib/types';
 //   -152  bot-text anchor (camera pans down to focus on calendar)
 
 export const timeline: TimelineConfig = {
-  cycle: '20s',
+  cycle: '15s',
   introHold: '0.54s',
   outroFade: '0.9s',
   metaFadeIn: '0.36s',
@@ -63,6 +63,6 @@ export const timeline: TimelineConfig = {
     { type: 'bot', id: 'bot-2-booked', lines: [32], cps: 150, accel: 1, pause: '0.3s' },
 
     // Final timestamp
-    { type: 'meta', id: 'meta-1', fadeIn: '0.36s', hold: '2s', fadeOut: '0s' },
+    { type: 'meta', id: 'meta-1', fadeIn: '0.36s', hold: '0s', fadeOut: '0s' },
   ],
 };

@@ -12,7 +12,7 @@ import type { TimelineConfig } from '@/lib/types';
 //   -76  user-1 anchor — bot-1+meta-0 scroll up together
 
 export const timeline: TimelineConfig = {
-  cycle: '13s',
+  cycle: '10.5s',
   introHold: '0.54s',
   outroFade: '0.9s',
   metaFadeIn: '0.36s',
@@ -29,9 +29,9 @@ export const timeline: TimelineConfig = {
     { type: 'scroll', target: 'custom-actions-scroll', y: -76, duration: '0.5s', parallel: true },
     { type: 'user', id: 'user-1', duration: '0.4s', pause: '0.72s' },
 
-    // Bot-2 response — 2 lines at streaming pace. meta-1 holds for
-    // 3.6s at the end of the cycle so the final frame breathes.
+    // Bot-2 response — 2 lines at streaming pace. meta-1 stays visible until
+    // stackFadeCycle starts; end-of-cycle breathing room comes from dwell.
     { type: 'bot', id: 'bot-2', lines: [57, 27], cps: 45, accel: 1, pause: '0.36s',
-      meta: { id: 'meta-1', hold: '3.6s', fadeOut: '0s' } },
+      meta: { id: 'meta-1', hold: '0s', fadeOut: '0s' } },
   ],
 };
