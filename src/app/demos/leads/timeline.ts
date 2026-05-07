@@ -21,7 +21,7 @@ export const timeline: TimelineConfig = {
 
     // Bot offers form — 2 lines split per Figma frame 2 (~88 chars at 334
     // width). cps 45 / accel 0.9 = standard AI-bot voice.
-    { type: 'bot', id: 'bot-2', lines: [50, 36], cps: 45, accel: 0.9, pause: '0.36s' },
+    { type: 'bot', id: 'bot-2', lines: [58, 28], cps: 45, accel: 0.9, pause: '0.36s' },
 
     // Form-card slides in below bot-2. No camera pan — the form (244 tall)
     // + meta-1 fits inside the content-box at the user-1 anchor (-76).

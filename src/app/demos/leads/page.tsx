@@ -37,8 +37,8 @@ export default function LeadsDemo() {
               <BotMessage
                 id="bot-2"
                 lines={[
-                  `I'd love to set that up for you. Just fill in your`,
-                  `details and we'll reach out shortly.`,
+                  `I'd love to set that up for you. Just fill in your details`,
+                  `and we'll reach out shortly.`,
                 ]}
               />
             </div>
