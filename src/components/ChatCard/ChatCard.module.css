@@ -1,3 +1,8 @@
+.scaledWrap {
+  width: 284.2px;
+  height: 512.4px;
+}
+
 .card {
   position: relative;
   width: 406px;
@@ -11,4 +16,6 @@
   flex-direction: column;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  transform: scale(0.7);
+  transform-origin: top left;
 }

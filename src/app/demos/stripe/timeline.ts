@@ -113,9 +113,9 @@ export const timeline: TimelineConfig = {
       rest: { travel: '0.25s' },
     },
 
-    // === Sheet exits — opacity fade-out, aligned with the meta's fadeOut
-    //     (meta hold 1.0s + fadeIn 0.4s = 1.4s; cursor click at ~1.4s) ===
-    { type: 'transition', hide: 'payment-sheet', show: 'noop-sheet-out', duration: '0.4s', pause: '0.18s' },
+    // === Sheet exits — slides DOWN (translateY 100%) + fade, mirroring the
+    //     slide-UP entrance. Aligned with the meta's fadeOut. ===
+    { type: 'transition', hide: 'payment-sheet', show: 'noop-sheet-out', duration: '0.7s', pause: '0.18s', slideOutY: '100%' },
 
     // === Cursor → bill summary's Confirm → bill morphs out, success morphs in ===
     { type: 'cursor', id: 'cursor-stripe',

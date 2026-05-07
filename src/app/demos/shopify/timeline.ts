@@ -76,7 +76,7 @@ export const timeline: TimelineConfig = {
     // button morphs to qty-stepper, all starting at the same time. parallel:true
     // on the first two keeps the cursor anchored so the third (overlay, no
     // parallel) drives the cursor advance.
-    { type: 'transition', hide: 'sheet-metcon', show: 'noop-1', duration: '0.6s', pause: '0s', slideOutY: '100%', parallel: true },
+    { type: 'transition', hide: 'sheet-metcon', show: 'noop-1', duration: '0.85s', pause: '0s', slideOutY: '100%', parallel: true },
     { type: 'transition', hide: 'btn-metcon', show: 'qty-metcon', duration: '0.3s', pause: '0s', slideOutY: '0px', parallel: true },
     { type: 'transition', hide: 'sheet-overlay-1', show: 'noop-4', duration: '0.6s', pause: '0.2s', slideOutY: '0px' },
 
@@ -97,7 +97,7 @@ export const timeline: TimelineConfig = {
       rest: { x: 290, travel: '0.4s' },
     },
     // Close in sync: sheet + overlay + button-to-qty all together.
-    { type: 'transition', hide: 'sheet-v2run', show: 'noop-2', duration: '0.6s', pause: '0s', slideOutY: '100%', parallel: true },
+    { type: 'transition', hide: 'sheet-v2run', show: 'noop-2', duration: '0.85s', pause: '0s', slideOutY: '100%', parallel: true },
     { type: 'transition', hide: 'btn-v2run', show: 'qty-v2run', duration: '0.3s', pause: '0s', slideOutY: '0px', parallel: true },
     { type: 'transition', hide: 'sheet-overlay-2', show: 'noop-3', duration: '0.6s', pause: '0.4s', slideOutY: '0px' },
 
