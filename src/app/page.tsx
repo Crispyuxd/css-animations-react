@@ -37,6 +37,11 @@ export default function Home() {
       <Link href="/demos/stripe" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
         Stripe
       </Link>
+
+      <h2 style={{ fontSize: 18, fontWeight: 600, marginTop: 16 }}>Integration prototypes</h2>
+      <Link href="/dashboard" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
+        Dashboard (Stripe widget integration)
+      </Link>
     </div>
   );
 }
