@@ -28,6 +28,8 @@ import { timeline as slack } from '../src/app/demos/slack/timeline';
 import { timeline as suggestedMessages } from '../src/app/demos/suggested-messages/timeline';
 import { timeline as tavily } from '../src/app/demos/tavily/timeline';
 import { timeline as shopify } from '../src/app/demos/shopify/timeline';
+import { timeline as leads } from '../src/app/demos/leads/timeline';
+import { timeline as stripe } from '../src/app/demos/stripe/timeline';
 
 const DEMOS: Array<{ name: string; cfg: TimelineConfig }> = [
   { name: 'escalation', cfg: escalation },
@@ -39,6 +41,8 @@ const DEMOS: Array<{ name: string; cfg: TimelineConfig }> = [
   { name: 'suggested-messages', cfg: suggestedMessages },
   { name: 'tavily', cfg: tavily },
   { name: 'shopify', cfg: shopify },
+  { name: 'leads', cfg: leads },
+  { name: 'stripe', cfg: stripe },
 ];
 
 type Walker = {
