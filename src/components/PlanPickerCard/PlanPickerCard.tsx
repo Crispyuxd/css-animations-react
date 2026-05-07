@@ -40,7 +40,10 @@ export function PlanPickerCard({
                 <span className={styles.planName}>{p.name}</span>
                 <span className={styles.planPrice}>{p.price}</span>
               </div>
-              <button id={p.selectId} type="button" className={styles.selectBtn}>Select</button>
+              <button id={p.selectId} type="button" className={styles.selectBtn}>
+                <span className={styles.selectLabel}>Select</span>
+                <span data-ring className={styles.selectRing} aria-hidden="true" />
+              </button>
             </div>
           </div>
         ))}

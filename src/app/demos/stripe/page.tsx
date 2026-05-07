@@ -63,7 +63,12 @@ export default function StripeDemo() {
             </DemoState>
 
             <DemoState id="state-success" overlay>
-              <div style={{ marginTop: 12 }}>
+              {/* marginTop:-8 cancels 8 of the 20px internal-to-turn gap so
+                  the success-card sits 12px below bot-3 (matches Figma frame 6).
+                  The forms/leads pattern uses +12 because bot-3 there has more
+                  lines than bot-2 and the line overflow consumes the gap;
+                  stripe's bot-3 is the same height as bot-2, so no overflow. */}
+              <div style={{ marginTop: -8 }}>
                 <CaseCreatedCard
                   id="success-card"
                   title="Plan successfully updated"
