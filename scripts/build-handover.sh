@@ -18,13 +18,17 @@ ZIP="$ROOT/widget-demos-v${VERSION}.zip"
 
 echo "▶ Cleaning previous build..."
 rm -rf "$OUT" "$ZIP"
-mkdir -p "$OUT"/{components,hooks,lib,demos,styles}
+mkdir -p "$OUT"/{components,hooks,lib,demos,styles,icons}
 
 echo "▶ Copying source..."
 cp -r "$ROOT/src/components/." "$OUT/components/"
 cp "$ROOT/src/hooks/useTimeline.ts" "$OUT/hooks/"
 cp "$ROOT/src/lib/"*.ts "$OUT/lib/"
 cp "$ROOT/src/app/globals.css" "$OUT/styles/tokens.css"
+# Components import inline-SVG icons from `@/icons` — must ship them or
+# every consumer build breaks with TS2307 on `@/icons` and at runtime
+# on the missing module. Bundled as a folder mirroring the src layout.
+cp -r "$ROOT/src/icons/." "$OUT/icons/"
 
 for d in escalation calendar shopify slack tavily custom-actions stripe leads forms button suggested-messages; do
   if [ -d "$ROOT/src/app/demos/$d" ]; then
