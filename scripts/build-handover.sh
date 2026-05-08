@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-VERSION="1.0.0"
+VERSION="1.1.0"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$ROOT/widget-demos-handover"
 ZIP="$ROOT/widget-demos-v${VERSION}.zip"
