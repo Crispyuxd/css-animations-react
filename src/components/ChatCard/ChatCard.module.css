@@ -1,5 +1,5 @@
 .scaledWrap {
-  --card-scale: 1;
+  --card-scale: 0.7;
   width: calc(406px * var(--card-scale));
   height: calc(732px * var(--card-scale));
 }
