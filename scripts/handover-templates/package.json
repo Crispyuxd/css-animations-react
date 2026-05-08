@@ -1,6 +1,6 @@
 {
   "name": "widget-demos",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Animated chat-widget demos (CSS + React). Each demo is a self-contained React component you can drop into a dashboard.",
   "main": "./index.ts",
   "types": "./index.ts",
