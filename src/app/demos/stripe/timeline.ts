@@ -100,9 +100,14 @@ export const timeline: TimelineConfig = {
     // === Sheet enters + overlay fades in CONCURRENTLY. widget runs with
     //     parallel:true (no cursor advance) — the meta below owns the
     //     visible-duration timing through its fadeIn (cursor advances 0.4s),
-    //     then the cursor moves to sheet-confirm during the meta's hold. ===
+    //     then the cursor moves to sheet-confirm during the meta's hold.
+    //     hold + fadeOut sized so the overlay's quick 0.2s fadeOut runs
+    //     during the LAST third of the sheet's 0.7s exit transition
+    //     (T+2.0 → T+2.2): blur stays solid while drawer is sliding,
+    //     then snaps clear in the final beat as the drawer settles.
+    //     "Almost dismissed → blur clears" feel, ends in lockstep. ===
     { type: 'widget', id: 'payment-sheet', duration: '0.5s', slideY: '100%', parallel: true, ease: 'var(--ease-scroll)' },
-    { type: 'meta', id: 'sheet-overlay', fadeIn: '0.4s', hold: '1.0s', fadeOut: '0.4s', parallel: true },
+    { type: 'meta', id: 'sheet-overlay', fadeIn: '0.4s', hold: '1.6s', fadeOut: '0.2s', parallel: true },
 
     // === Cursor → sheet's Confirm button. Cursor lives at ChatCard level
     //     (same chain as the sheet) so this waypoint resolves correctly. ===

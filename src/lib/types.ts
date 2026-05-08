@@ -18,6 +18,11 @@ export interface CursorWaypoint {
   pause?: TimeValue;
   select?: string;
   mode?: 'pointer' | 'text';  // cursor shape on click — defaults to 'pointer'
+  // Fade-in duration of the target's hover state as the cursor approaches.
+  // Hover peaks when the cursor arrives and crossfades out across `click` as
+  // `select` takes over. Requires the target element to have [data-hover]
+  // and (optionally) [data-hover-text] markup. Implies `select`.
+  hover?: TimeValue;
 }
 
 export type TimelineStep =

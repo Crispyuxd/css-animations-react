@@ -24,7 +24,6 @@ export function SubscriptionsCard({ id, updateButtonId }: { id?: string; updateB
             <button type="button" className={`${styles.btn} ${styles.btnDanger}`}>Cancel plan</button>
             <button id={updateButtonId} type="button" className={`${styles.btn} ${styles.btnPrimary}`}>
               <span className={styles.btnLabel}>Update plan</span>
-              <span data-ring className={styles.btnRing} aria-hidden="true" />
             </button>
           </div>
         </div>

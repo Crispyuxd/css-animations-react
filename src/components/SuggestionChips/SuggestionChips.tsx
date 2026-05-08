@@ -27,8 +27,9 @@ export function SuggestionChip({
 }) {
   return (
     <button id={id} type="button" className={styles.chip} aria-label={children}>
+      <span data-hover className={styles.hover} aria-hidden="true" />
       {icon && <span className={styles.icon} aria-hidden="true">{icon}</span>}
-      <span className={styles.label}>{children}</span>
+      <span data-hover-text className={styles.label}>{children}</span>
       <span data-ring className={styles.ring} aria-hidden="true" />
     </button>
   );

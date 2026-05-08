@@ -1,6 +1,7 @@
 .scaledWrap {
-  width: 284.2px;
-  height: 512.4px;
+  --card-scale: 1;
+  width: calc(406px * var(--card-scale));
+  height: calc(732px * var(--card-scale));
 }
 
 .card {
@@ -16,6 +17,6 @@
   flex-direction: column;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  transform: scale(0.7);
+  transform: scale(var(--card-scale));
   transform-origin: top left;
 }

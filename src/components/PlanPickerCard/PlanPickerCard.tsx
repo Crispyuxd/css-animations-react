@@ -41,7 +41,8 @@ export function PlanPickerCard({
                 <span className={styles.planPrice}>{p.price}</span>
               </div>
               <button id={p.selectId} type="button" className={styles.selectBtn}>
-                <span className={styles.selectLabel}>Select</span>
+                <span data-label-default className={styles.selectLabel}>Select</span>
+                <span data-label-selected className={`${styles.selectLabel} ${styles.selectLabelSelected}`}>Selected</span>
                 <span data-ring className={styles.selectRing} aria-hidden="true" />
               </button>
             </div>
@@ -52,7 +53,6 @@ export function PlanPickerCard({
       <div className={styles.footer}>
         <button id={confirmId} type="button" className={styles.confirmBtn}>
           <span className={styles.btnLabel}>Confirm</span>
-          <span data-ring className={styles.btnRing} aria-hidden="true" />
         </button>
       </div>
     </div>

@@ -31,7 +31,7 @@ export const timeline: TimelineConfig = {
       startX: 320, startY: 220,
       appear: '0.3s',
       waypoints: [
-        { target: 'chip-plans', travel: '0.7s', click: '0.12s', pause: '0.5s', select: 'chip-plans' },
+        { target: 'chip-plans', travel: '0.7s', click: '0.12s', pause: '0.5s', select: 'chip-plans', hover: '0.3s' },
       ],
     },
 
@@ -44,8 +44,11 @@ export const timeline: TimelineConfig = {
     { type: 'bot', id: 'bot-2', lines: [20, 50, 12, 46, 25, 49, 23, 48, 17, 58, 56, 28], cps: 45, accel: 1, pause: '0.36s' },
     { type: 'meta', id: 'meta-1', fadeIn: '0.36s', hold: '0s', fadeOut: '0s', parallel: true },
 
-    // Chips return so the loop reads as a fresh prompt opportunity
-    { type: 'widget', id: 'chips-2', duration: '0.4s', pause: '3s' },
-    { type: 'transition', hide: 'chips-2', show: 'noop-end', duration: '0.5s', slideOutY: '0px' },
+    // Chips return so the loop reads as a fresh prompt opportunity. Pause
+    // is sized so the fade-out lands inside the messagesStack outro window
+    // (cycleMs − outroFade − 0.9s … cycleMs − 0.9s) and the duration matches
+    // outroFade so chips and messages fade in lockstep.
+    { type: 'widget', id: 'chips-2', duration: '0.4s', pause: '5.84s' },
+    { type: 'transition', hide: 'chips-2', show: 'noop-end', duration: '0.9s', slideOutY: '0px' },
   ],
 };

@@ -43,6 +43,12 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   // anticipation principle: target acknowledges incoming intent.
   const pulseData: Record<string, Array<{ pct: string; scale: number }>> = {};
 
+  // Hover state that crossfades in as the cursor approaches the target and
+  // out across the click as `select` takes over. Requires a [data-hover]
+  // overlay on the target; optional [data-hover-text] receives a text-color
+  // tween towards var(--hover-text-color).
+  const hoverData: Record<string, Array<{ pct: string; opacity: number }>> = {};
+
   const pct = (ms: number) => (ms / cycleMs * 100).toFixed(1);
   // Higher-precision pct for caret transition stops — toFixed(1) collides on
   // sub-millisecond gaps over long cycles (35s → 0.003%/ms), making the
@@ -328,6 +334,19 @@ export function generateTimelineCSS(config: TimelineConfig): string {
           pulseData[wp.select].push({ pct: `${pct(pulseStart)}%`, scale: 1 });
           pulseData[wp.select].push({ pct: `${pct(c)}%`, scale: 1.012 });
           pulseData[wp.select].push({ pct: `${pct(pulseEnd)}%`, scale: 1 });
+
+          // Hover crossfade: fades in over the tail of travel, peaks at
+          // arrive (c), crossfades out across the click as `select` takes
+          // over. No-op for elements that don't have a [data-hover] overlay.
+          if (wp.hover) {
+            const hoverIn = parseMs(wp.hover);
+            const hoverStart = Math.max(c - hoverIn, 0);
+            const hoverEnd = c + click;
+            if (!hoverData[wp.select]) hoverData[wp.select] = [{ pct: '0%', opacity: 0 }];
+            hoverData[wp.select].push({ pct: `${pct(hoverStart)}%`, opacity: 0 });
+            hoverData[wp.select].push({ pct: `${pct(c)}%`, opacity: 1 });
+            hoverData[wp.select].push({ pct: `${pct(hoverEnd)}%`, opacity: 0 });
+          }
         }
 
         c += click;
@@ -568,12 +587,38 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   // tween on a sibling [data-ring] overlay (the parent's natural border shows
   // through when the overlay is at opacity 0). Replaces previous box-shadow
   // animation on the parent (paint-tier).
+  //
+  // `[data-label-default]` and `[data-label-selected]` are paired overlays for
+  // a label swap (e.g. "Select" → "Selected"): the default fades out as the
+  // selected fades in, in sync with the ring. Targets without those overlays
+  // get no-op rules.
   for (const [id, stops] of Object.entries(selectionData)) {
     const last = stops[stops.length - 1];
     stops.push({ pct: '100%', selected: last.selected });
     const frameStrs = stops.map(s => `${s.pct} { opacity: ${s.selected ? 1 : 0}; }`);
     rules.push(`@keyframes sel-${id} {\n  ${frameStrs.join('\n  ')}\n}`);
     rules.push(`#${id} [data-ring] { animation: sel-${id} ${cycleStr} linear infinite both; will-change: opacity; }`);
+    rules.push(`#${id} [data-label-selected] { animation: sel-${id} ${cycleStr} linear infinite both; will-change: opacity; }`);
+    const invFrameStrs = stops.map(s => `${s.pct} { opacity: ${s.selected ? 0 : 1}; }`);
+    rules.push(`@keyframes sel-inv-${id} {\n  ${invFrameStrs.join('\n  ')}\n}`);
+    rules.push(`#${id} [data-label-default] { animation: sel-inv-${id} ${cycleStr} linear infinite both; will-change: opacity; }`);
+  }
+
+  // Emit aggregated hover-crossfade keyframes. Bg overlay opacity tween on
+  // [data-hover]; sibling [data-hover-text] gets a `color` tween between
+  // `--hover-text-idle` and `--hover-text-peak` (defined on the target
+  // component). Targets without those CSS vars fall through to `inherit`,
+  // leaving the label unchanged.
+  for (const [id, stops] of Object.entries(hoverData)) {
+    stops.push({ pct: '100%', opacity: 0 });
+    const opStrs = stops.map(s => `${s.pct} { opacity: ${s.opacity}; }`);
+    rules.push(`@keyframes hov-${id} {\n  ${opStrs.join('\n  ')}\n}`);
+    rules.push(`#${id} [data-hover] { animation: hov-${id} ${cycleStr} linear infinite both; will-change: opacity; }`);
+    const colorStrs = stops.map(s =>
+      `${s.pct} { color: var(${s.opacity === 1 ? '--hover-text-peak' : '--hover-text-idle'}, inherit); }`
+    );
+    rules.push(`@keyframes hov-text-${id} {\n  ${colorStrs.join('\n  ')}\n}`);
+    rules.push(`#${id} [data-hover-text] { animation: hov-text-${id} ${cycleStr} linear infinite both; }`);
   }
 
   // Emit deferred typewriter line keyframes. With an `untype` step the same
