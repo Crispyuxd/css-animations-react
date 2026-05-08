@@ -19,7 +19,10 @@
   height: 168px;
   padding: 12px;
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  /* Default 1px gray "border" rendered as an inset shadow so the focus
+     ring (also inset, 2px black) can paint over it from the same edge —
+     no double-stroke when the ring is active. */
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
   border-radius: 8px;
   overflow: hidden;
 }

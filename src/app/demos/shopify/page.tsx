@@ -41,7 +41,7 @@ export default function ShopifyDemo() {
             </div>
 
             <div style={{ marginTop: 12, position: 'relative' }}>
-              <DemoState id="state-categories" metaId="meta-cat">
+              <DemoState id="state-categories" metaId="meta-cat" metaGap={12}>
                 <CategoriesWidget
                   id="categories-widget"
                   items={[
@@ -51,7 +51,7 @@ export default function ShopifyDemo() {
                 />
               </DemoState>
 
-              <DemoState id="state-picker" overlay metaId="meta-picker">
+              <DemoState id="state-picker" overlay metaId="meta-picker" metaGap={12}>
                 <PickerWidget
                   id="picker-widget"
                   category="Men’s Workout Shoes"
@@ -63,7 +63,7 @@ export default function ShopifyDemo() {
                 />
               </DemoState>
 
-              <DemoState id="state-cart" overlay metaId="meta-cart">
+              <DemoState id="state-cart" overlay metaId="meta-cart" metaGap={12}>
                 <CartWidget
                   id="cart-widget"
                   items={[
@@ -76,7 +76,7 @@ export default function ShopifyDemo() {
                 />
               </DemoState>
 
-              <DemoState id="state-success" overlay metaId="meta-success">
+              <DemoState id="state-success" overlay metaId="meta-success" metaGap={12}>
                 <OrderSuccessWidget
                   id="success-widget"
                   subtitle="25th March, 2026 at 3:00 PM"

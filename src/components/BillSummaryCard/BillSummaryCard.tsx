@@ -59,7 +59,6 @@ export function BillSummaryCard({
           <button type="button" className={`${styles.btn} ${styles.btnDanger}`}>Cancel plan</button>
           <button id={confirmId} type="button" className={`${styles.btn} ${styles.btnPrimary}`}>
             <span className={styles.btnLabel}>Confirm</span>
-            <span data-ring className={styles.btnRing} aria-hidden="true" />
           </button>
         </div>
       </div>

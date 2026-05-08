@@ -31,12 +31,27 @@
   cursor: default;
   white-space: nowrap;
   flex-shrink: 0;
+  --hover-text-idle: var(--text-heading);
+  --hover-text-peak: #3f3f46;
+}
+.hover {
+  position: absolute;
+  inset: 0;
+  background: #fafafa;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
 }
 .ring {
   position: absolute;
   inset: 0;
   border-radius: var(--radius-pill);
-  box-shadow: inset 0 0 0 2px var(--text-heading);
+  /* Outset shadow (not inset) so the 1.5px black paints over the chip's
+     1px gray border instead of just inside it — avoids the double-stroke
+     visible when both colors stack. Spread 1.5px = 1px to cover the gray
+     border + 0.5px to extend just past the chip edge. */
+  box-shadow: 0 0 0 1.5px var(--text-heading);
   opacity: 0;
   pointer-events: none;
   will-change: opacity;
@@ -45,6 +60,7 @@
   gap: 6px;
 }
 .icon {
+  position: relative;
   width: 20px;
   height: 20px;
   display: inline-flex;
@@ -53,6 +69,7 @@
   flex-shrink: 0;
 }
 .label {
+  position: relative;
   font-size: 14px;
   font-weight: 500;
   line-height: 1.4;

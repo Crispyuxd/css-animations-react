@@ -174,7 +174,7 @@
 }
 
 .btnPrimary {
-  background: #09090b;
+  background: var(--bg-brand);
   color: #fff;
   overflow: hidden;
 }
