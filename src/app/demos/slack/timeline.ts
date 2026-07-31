@@ -20,7 +20,7 @@ export const timeline: TimelineConfig = {
   metaFadeOut: '0.36s',
   steps: [
     // AI bot greets — meta-0 fadeOut '0s' so it scrolls up with bot-1
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s',
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s',
       meta: { id: 'meta-0', fadeOut: '0s' } },
 
     // user-1 turn-anchor (parallel): scroll runs concurrently with the
@@ -32,7 +32,7 @@ export const timeline: TimelineConfig = {
 
     // Bot-2 response — 3 lines at streaming pace. meta-1 stays visible until
     // stackFadeCycle starts; end-of-cycle breathing room comes from dwell.
-    { type: 'bot', id: 'bot-2', lines: [52, 52, 27], cps: 45, accel: 1, pause: '0.36s',
+    { type: 'bot', id: 'bot-2', lines: [52, 52, 27], pause: '0.36s',
       meta: { id: 'meta-1', hold: '0s', fadeOut: '0s' } },
   ],
 };

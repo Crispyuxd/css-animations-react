@@ -20,7 +20,7 @@ export const timeline: TimelineConfig = {
   metaFadeOut: '0.36s',
   steps: [
     // AI bot greets — meta-0 fadeOut '0s' so it scrolls up with bot-1
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s',
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s',
       meta: { id: 'meta-0', fadeOut: '0s' } },
 
     // user-1 turn-anchor (parallel): scroll runs concurrently with the
@@ -32,8 +32,8 @@ export const timeline: TimelineConfig = {
 
     // Bot offers categories list — `lines:` mode so the engine tracks the
     // line span (#bot-2-line-1) and a later `untype` step can backspace it
-    // ahead of the success transition. 46 chars / cps 45 ≈ 1.02s.
-    { type: 'bot', id: 'bot-2', lines: [46], cps: 45, accel: 1, pause: '0.3s' },
+    // ahead of the success transition. 46 chars at the 90 cps base ≈ 0.51s.
+    { type: 'bot', id: 'bot-2', lines: [46], pause: '0.3s' },
 
     // Phase: categories
     { type: 'widget', id: 'categories-widget', duration: '0.4s', pause: '0.2s' },
@@ -140,7 +140,7 @@ export const timeline: TimelineConfig = {
     // Bot-3 types in the success message during the morph end. cps 120 lands
     // 43 chars in ~0.36s so text resolves around the same time the card
     // morph completes — text and card finish together as one beat.
-    { type: 'bot', id: 'bot-3', lines: [43], cps: 120, accel: 1, pause: '0.3s' },
+    { type: 'bot', id: 'bot-3', lines: [43], cps: 120, pause: '0.3s' },
 
     { type: 'meta', id: 'meta-success', fadeIn: '0.36s', hold: '0s', fadeOut: '0s', parallel: true },
   ],

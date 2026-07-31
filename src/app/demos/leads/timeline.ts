@@ -11,7 +11,7 @@ export const timeline: TimelineConfig = {
     // Bot greets — typewriter at AI-streamed pace.
     // meta-0 stays at opacity 1 (fadeOut '0s') so it scrolls up alongside
     // bot-1 instead of fading out before the camera pans.
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s', meta: { id: 'meta-0', fadeOut: '0s' } },
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s', meta: { id: 'meta-0', fadeOut: '0s' } },
 
     // Turn-anchor (parallel): the stack scrolls up at the same moment
     // user-1 pops in, so the bubble feels anchored at the inset edge from
@@ -20,8 +20,8 @@ export const timeline: TimelineConfig = {
     { type: 'user', id: 'user-1', duration: '0.54s', pause: '0.36s' },
 
     // Bot offers form — 2 lines split per Figma frame 2 (~88 chars at 334
-    // width). cps 45 / accel 0.9 = standard AI-bot voice.
-    { type: 'bot', id: 'bot-2', lines: [58, 28], cps: 45, accel: 0.9, pause: '0.36s' },
+    // width). No cps/accel: inherits the product AI voice (90 cps, +45%/line).
+    { type: 'bot', id: 'bot-2', lines: [58, 28], pause: '0.36s' },
 
     // Form-card slides in below bot-2. No camera pan — the form (244 tall)
     // + meta-1 fits inside the content-box at the user-1 anchor (-76).
@@ -86,7 +86,7 @@ export const timeline: TimelineConfig = {
 
     // Bot-3 success follow-up — fast, confident with positive accel so the
     // 3 lines finish around the time the card morph completes.
-    { type: 'bot', id: 'bot-3', lines: [39, 46, 42], cps: 150, accel: 1.3, pause: '0.3s' },
+    { type: 'bot', id: 'bot-3', lines: [39, 46, 42], cps: 150, accel: 0.3, pause: '0.3s' },
 
     // Final timestamp
     { type: 'meta', id: 'meta-2', fadeIn: '0.36s', hold: '0s', fadeOut: '0s', parallel: true },

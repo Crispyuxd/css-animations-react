@@ -20,7 +20,7 @@ export const timeline: TimelineConfig = {
   metaFadeOut: '0.36s',
   steps: [
     // AI bot greets — meta-0 fadeOut '0s' so it scrolls up with bot-1
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s',
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s',
       meta: { id: 'meta-0', fadeOut: '0s', parallel: true } },
 
     // Suggestion chips slide in just after the timestamp registers
@@ -41,7 +41,11 @@ export const timeline: TimelineConfig = {
     { type: 'transition', hide: 'chips-1', show: 'user-1', duration: '0.5s', pause: '0.72s' },
 
     // Bot replies — 12 lines at streaming pace. meta-1 stays visible.
-    { type: 'bot', id: 'bot-2', lines: [20, 50, 12, 46, 25, 49, 23, 48, 17, 58, 56, 28], cps: 45, accel: 1, pause: '0.36s' },
+    // Local accel override: the product's +45%/line is tuned for 2-4 line
+    // replies. Over 12 lines it compounds to ~535 cps by the last line, which
+    // reads as a flash, not a reveal. 0.1 keeps the accelerating feel and tops
+    // out at 189 cps. Any reply this long needs its own accel.
+    { type: 'bot', id: 'bot-2', lines: [20, 50, 12, 46, 25, 49, 23, 48, 17, 58, 56, 28], accel: 0.1, pause: '0.36s' },
     { type: 'meta', id: 'meta-1', fadeIn: '0.36s', hold: '0s', fadeOut: '0s', parallel: true },
 
     // Chips return so the loop reads as a fresh prompt opportunity. Pause

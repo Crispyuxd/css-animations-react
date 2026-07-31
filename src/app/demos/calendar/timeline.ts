@@ -20,7 +20,7 @@ export const timeline: TimelineConfig = {
   metaFadeOut: '0.36s',
   steps: [
     // AI bot greets — meta-0 fadeOut '0s' so it scrolls up with bot-1
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s',
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s',
       meta: { id: 'meta-0', fadeOut: '0s' } },
 
     // user-1 turn-anchor (parallel): lands user-1 at padding-box y=20
@@ -28,7 +28,7 @@ export const timeline: TimelineConfig = {
     { type: 'user', id: 'user-1', duration: '0.4s', pause: '0.72s' },
 
     // Bot offers calendar picker
-    { type: 'bot', id: 'bot-2', lines: [37], cps: 45, accel: 1, pause: '0.3s' },
+    { type: 'bot', id: 'bot-2', lines: [37], pause: '0.3s' },
 
     // Calendar widget slides in — no additional scroll, user-1 stays anchored
     { type: 'widget', id: 'calendar-widget', duration: '0.4s', pause: '0.2s' },
@@ -60,7 +60,7 @@ export const timeline: TimelineConfig = {
     { type: 'shimmer', target: 'call-booked', duration: '0.9s' },
 
     // Bot success text types in fast
-    { type: 'bot', id: 'bot-2-booked', lines: [32], cps: 150, accel: 1, pause: '0.3s' },
+    { type: 'bot', id: 'bot-2-booked', lines: [32], cps: 150, pause: '0.3s' },
 
     // Final timestamp
     { type: 'meta', id: 'meta-1', fadeIn: '0.36s', hold: '0s', fadeOut: '0s' },

@@ -12,7 +12,7 @@ export const timeline: TimelineConfig = {
     // meta-0 ("Just now" + thumbs) uses fadeOut '0s' so it stays visible
     // through the scroll and translates up alongside bot-1 instead of
     // fading out first.
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s', meta: { id: 'meta-0', fadeOut: '0s' } },
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s', meta: { id: 'meta-0', fadeOut: '0s' } },
 
     // Turn-anchor (parallel): the stack scrolls up at the same moment user-1
     // pops in, so the bubble feels anchored at the top from the first frame
@@ -26,7 +26,7 @@ export const timeline: TimelineConfig = {
     { type: 'user', id: 'user-1', duration: '0.54s', pause: '0.36s' },
 
     // Bot offers form (typewriter types in below user-1, no scroll change)
-    { type: 'bot', id: 'bot-2', lines: [29], cps: 45, accel: 1, pause: '0.36s' },
+    { type: 'bot', id: 'bot-2', lines: [29], pause: '0.36s' },
 
     // Camera pans down at form pop-up to anchor meta-1 ("Just now" + thumbs)
     // at the content-box bottom edge with the base-height form (438). With
@@ -73,7 +73,7 @@ export const timeline: TimelineConfig = {
     { type: 'transition', hide: 'msg-placeholder', show: 'noop-msg-pl', duration: '0.1s', pause: '0s' },
     // Message body — fast-but-human start; gentle decay sells "typing slows
     // as user thinks deeper". 65 cps line 1 → ~40 cps line 6.
-    { type: 'bot', id: 'msg-value', lines: [31, 32, 34, 36, 36, 42], cps: 65, accel: 0.92, pause: '0.3s', caret: true },
+    { type: 'bot', id: 'msg-value', lines: [31, 32, 34, 36, 36, 42], cps: 65, accel: -0.08, pause: '0.3s', caret: true },
     { type: 'deselect', target: 'field-msg-value', duration: '0.2s', pause: '0s' },
 
     // === Add attachment === Click triggers a deeper scroll to make room
@@ -153,11 +153,12 @@ export const timeline: TimelineConfig = {
 
     // Bot success follow-up — fast type with positive acceleration so the
     // text finishes rendering at roughly the same moment the card morph
-    // completes (~submit_end + 1.0s). cps 150 base × accel 1.3 lands line 1
-    // in ~0.28s and line 2 in ~0.27s, total ~0.55s on top of bot-3's start
+    // completes (~submit_end + 1.0s). cps 150 base, accel +0.3 lands line 1
+    // in ~0.28s and line 2 in ~0.27s, total ~0.67s (incl. the 120ms inter-line
+    // gap) on top of bot-3's start
     // at submit_end + 0.5s. Reads as the agent confidently delivering the
     // good news — text and card resolve together.
-    { type: 'bot', id: 'bot-3', lines: [42, 52], cps: 150, accel: 1.3, pause: '0.3s' },
+    { type: 'bot', id: 'bot-3', lines: [42, 52], cps: 150, accel: 0.3, pause: '0.3s' },
 
     // Final timestamp
     { type: 'meta', id: 'meta-2', fadeIn: '0.36s', hold: '0s', fadeOut: '0s', parallel: true },

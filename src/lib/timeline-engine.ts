@@ -1,6 +1,22 @@
 import type { TimelineConfig } from './types';
 import { parseMs } from './parse-ms';
 
+// Typewriter constants, ported verbatim from the Chatbase product widget
+// (chatbase-website/src/components/integrations-page/channel-demos/sunshine/
+// typewriter.tsx → TYPEWRITER_CPS / TYPEWRITER_LINE_ACCEL /
+// TYPEWRITER_LINE_GAP_MS). Streaming reads as accelerating: each successive
+// line is 45% faster than the base, with a beat of silence between lines.
+const TYPEWRITER_CPS = 90;
+const TYPEWRITER_LINE_ACCEL = 0.45;
+const TYPEWRITER_LINE_GAP_MS = 120;
+
+// Per-line speed. LINEAR in the line index (90 → 130.5 → 171 …), not
+// compounding — matches the product's `baseCps * (1 + index * accel)`.
+// A negative accel decelerates instead, which is how a human typist reads
+// (escalation's Mark Kent, forms' textarea).
+const lineCps = (baseCps: number, index: number, accel: number) =>
+  baseCps * (1 + index * accel);
+
 export function generateTimelineCSS(config: TimelineConfig): string {
   const cycleMs = parseMs(config.cycle);
   const cycleStr = typeof config.cycle === 'number' ? `${config.cycle}ms` : config.cycle;
@@ -97,15 +113,14 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       // same perceived speed. steps(N) where N = char count gives one tick
       // per character.
       if (Array.isArray(step.lines)) {
-        const baseCps = step.cps ?? 45;
-        const accel = step.accel ?? 0.8;
+        const baseCps = step.cps ?? TYPEWRITER_CPS;
+        const accel = step.accel ?? TYPEWRITER_LINE_ACCEL;
         const charCounts = step.lines;
         rules.push(`#${step.id} { clip-path: none; padding-right: 0; }`);
         let lineCursorMs = cursor;
         for (let i = 0; i < charCounts.length; i++) {
           const chars = Math.max(1, charCounts[i]);
-          const lineCps = baseCps * Math.pow(accel, i);
-          const lineDurMs = (chars / lineCps) * 1000;
+          const lineDurMs = (chars / lineCps(baseCps, i, accel)) * 1000;
           const lineId = `${step.id}-line-${i + 1}`;
           // Defer tw-${lineId} keyframe emission — a later `untype` step may
           // extend it with backspace stops. Emitted in the post-loop sweep.
@@ -123,7 +138,10 @@ export function generateTimelineCSS(config: TimelineConfig): string {
 }`);
             rules.push(`#caret-${lineId} { animation: caret-${lineId} ${cycleStr} linear infinite both; }`);
           }
+          // Beat of silence between lines (product parity). Not applied after
+          // the last line — the meta row / next step owns that gap.
           lineCursorMs += lineDurMs;
+          if (i < charCounts.length - 1) lineCursorMs += TYPEWRITER_LINE_GAP_MS;
         }
         cursor = lineCursorMs;
         if (step.meta) emitMeta(step.meta);

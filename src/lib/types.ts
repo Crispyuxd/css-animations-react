@@ -26,6 +26,11 @@ export interface CursorWaypoint {
 }
 
 export type TimelineStep =
+  // `lines` as number[] = per-line char counts (proportional typing).
+  // `cps` = base chars/sec for line 1, default 90 (product base).
+  // `accel` = LINEAR per-line speed-up, default 0.45 → line N types at
+  //   cps * (1 + (N-1) * accel). Negative decelerates (human typist).
+  //   Note this is not the old compounding cps * accel^(N-1).
   | { type: 'bot'; id: string; duration?: TimeValue; pause?: TimeValue; lines?: number | number[]; cps?: number; accel?: number; meta?: MetaConfig; caret?: boolean }
   | { type: 'user'; id: string; duration?: TimeValue; pause?: TimeValue }
   | { type: 'meta'; id: string; fadeIn?: TimeValue; hold?: TimeValue; fadeOut?: TimeValue; pause?: TimeValue; parallel?: boolean }
