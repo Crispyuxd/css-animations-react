@@ -30,8 +30,16 @@ const THINKING_DWELL_MS = 1200;
 // compounding — matches the product's `baseCps * (1 + index * accel)`.
 // A negative accel decelerates instead, which is how a human typist reads
 // (escalation's Mark Kent, forms' textarea).
+//
+// The multiplier is floored because a decelerating accel crosses zero on a long
+// enough message (accel -0.08 does it at line 14), and a zero or negative cps
+// would make `chars / cps` Infinity or negative, emitting `Infinity%` keyframe
+// stops that silently break the whole demo. 0.1 is already a 10x slowdown, far
+// past anything readable, so the clamp never alters a real timeline: today's
+// slowest line is forms' sixth at 0.6.
+const LINE_CPS_MIN_FACTOR = 0.1;
 const lineCps = (baseCps: number, index: number, accel: number) =>
-  baseCps * (1 + index * accel);
+  baseCps * Math.max(LINE_CPS_MIN_FACTOR, 1 + index * accel);
 
 export function generateTimelineCSS(config: TimelineConfig): string {
   const cycleMs = parseMs(config.cycle);
@@ -238,11 +246,17 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       const cutStart = pctP(cursor + dwell);
       const cutEnd = pctP(cursor + dwell + 1);
 
+      // `visibility` rides along with opacity so the indicator leaves the
+      // accessibility tree outside its visible window — opacity 0 alone keeps
+      // the stale "Thinking" reachable on top of the finished reply, since the
+      // element stays mounted for the whole loop. Safe to animate: visibility
+      // interpolates discretely, but an interval with either endpoint `visible`
+      // stays visible throughout, so the fade-in and the cut are unaffected.
       rules.push(`@keyframes think-${step.id} {
-  0%, ${startPct}% { opacity: 0; }
-  ${inEnd}% { opacity: 1; }
-  ${cutStart}% { opacity: 1; }
-  ${cutEnd}%, 100% { opacity: 0; }
+  0%, ${startPct}% { opacity: 0; visibility: hidden; }
+  ${inEnd}% { opacity: 1; visibility: visible; }
+  ${cutStart}% { opacity: 1; visibility: visible; }
+  ${cutEnd}%, 100% { opacity: 0; visibility: hidden; }
 }`);
       rules.push(`#${step.id} { animation: think-${step.id} ${cycleStr} ease-out infinite both; will-change: opacity; }`);
 

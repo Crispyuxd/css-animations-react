@@ -17,7 +17,10 @@
   color: var(--text-muted);
   white-space: nowrap;
   pointer-events: none;
+  /* The timeline drives both: visibility keeps the label out of the
+     accessibility tree (and out of paint) outside its visible window. */
   opacity: 0;
+  visibility: hidden;
 }
 
 /* 6px = --spaceXXS, the product's gap between the mark and the label. */

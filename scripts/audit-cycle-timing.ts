@@ -100,7 +100,9 @@ function walk(cfg: TimelineConfig): Walker {
           const chars = Math.max(1, lines[i]);
           // Linear per-line speed-up, matching the engine's
           // baseCps * (1 + i * accel). Not the old compounding accel^i.
-          const cps = baseCps * (1 + i * accel);
+          // Same 0.1 floor as the engine, so a decelerating accel can't reach
+          // zero cps and produce an infinite duration.
+          const cps = baseCps * Math.max(0.1, 1 + i * accel);
           const dur = (chars / cps) * 1000;
           const lineId = `${(step as any).id}-line-${i + 1}`;
           lineEnd[lineId] = c + dur;
