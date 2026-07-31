@@ -58,8 +58,11 @@ export const timeline: TimelineConfig = {
     // Chips return so the loop reads as a fresh prompt opportunity. Pause
     // is sized so the fade-out lands inside the messagesStack outro window
     // (cycleMs − outroFade − 0.9s … cycleMs − 0.9s) and the duration matches
-    // outroFade so chips and messages fade in lockstep.
-    { type: 'widget', id: 'chips-2', duration: '0.4s', pause: '2.37s' },
+    // outroFade so chips and messages fade in lockstep. chips-2 lands at
+    // 11.73s, so 1.47s puts the hide at 13.2s = fadeStart for the 15s cycle,
+    // ending at 14.1s = fadeEnd. Re-derive with scripts/audit-cycle-timing.ts
+    // whenever the cycle or the reply pace moves.
+    { type: 'widget', id: 'chips-2', duration: '0.4s', pause: '1.47s' },
     { type: 'transition', hide: 'chips-2', show: 'noop-end', duration: '0.9s', slideOutY: '0px' },
   ],
 };

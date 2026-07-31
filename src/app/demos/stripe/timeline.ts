@@ -26,7 +26,7 @@ import type { TimelineConfig } from '@/lib/types';
 //   Plenty of headroom; same camera as bill.
 
 export const timeline: TimelineConfig = {
-  cycle: '21.5s',
+  cycle: '22s',
   introHold: '0.54s',
   outroFade: '0.9s',
   metaFadeIn: '0.36s',
