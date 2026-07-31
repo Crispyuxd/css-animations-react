@@ -9,13 +9,14 @@ export function SparkleAvatar() {
   );
 }
 
-// Stacked-cube thinking mark, copied verbatim from the product widget's
-// message trace (sunshine/message-trace.tsx ThinkingMark). Carries its own
-// brand fills and white strokes, so it ignores currentColor. Spun by
-// ThinkingTrace, not here.
+// Stacked-cube thinking mark, copied verbatim from the product widget's message
+// trace (chatbase-agents src/components/ui/message-trace.tsx ThinkingMark;
+// Storybook UI/Message Trace). Carries its own brand fills and white strokes, so
+// it ignores currentColor. Decorative: the "Thinking" label beside it carries the
+// meaning. Spun by ThinkingTrace, not here.
 export function ThinkingMark() {
   return (
-    <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
+    <svg width="16" height="18" viewBox="0 0 16 18" fill="none" aria-hidden="true">
       <path d="M4.51562 2.57398L8.0111 0.576172L11.5066 2.57398V6.5696L8.0111 8.56742L4.51562 6.5696V2.57398Z" fill="#FE6737"/>
       <path d="M8.0111 8.56742L11.5066 6.5696V2.57398L8.0111 0.576172L4.51562 2.57398V6.5696L8.0111 8.56742ZM4.51562 2.57398L8.0111 4.57179M11.5066 2.57398L8.0111 4.57179M8.0111 4.57179V8.56742" stroke="white"/>
       <path d="M1 8.57398L4.49548 6.57617L7.99095 8.57398V12.5696L4.49548 14.5674L1 12.5696V8.57398Z" fill="#FE6737"/>

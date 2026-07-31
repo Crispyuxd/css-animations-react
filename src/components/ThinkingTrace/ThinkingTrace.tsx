@@ -23,7 +23,7 @@ interface ThinkingTraceProps {
  */
 export function ThinkingTrace({ id }: ThinkingTraceProps) {
   return (
-    <span id={id} className={styles.trace} aria-hidden>
+    <span id={id} className={styles.trace}>
       <span className={styles.markBox}>
         <span className={styles.mark}><ThinkingMark /></span>
       </span>
