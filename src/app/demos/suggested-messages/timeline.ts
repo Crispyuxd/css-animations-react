@@ -13,7 +13,7 @@ import type { TimelineConfig } from '@/lib/types';
 //   -76  user-1 anchor — bot-1+meta-0 scroll up together
 
 export const timeline: TimelineConfig = {
-  cycle: '24s',
+  cycle: '15s',
   introHold: '0.54s',
   outroFade: '0.9s',
   metaFadeIn: '0.36s',
@@ -59,8 +59,10 @@ export const timeline: TimelineConfig = {
     // Chips return so the loop reads as a fresh prompt opportunity. Pause
     // is sized so the fade-out lands inside the messagesStack outro window
     // (cycleMs − outroFade − 0.9s … cycleMs − 0.9s) and the duration matches
-    // outroFade so chips and messages fade in lockstep.
-    { type: 'widget', id: 'chips-2', duration: '0.4s', pause: '5.84s' },
+    // outroFade so chips and messages fade in lockstep. chips-2 lands at
+    // 10.83s, so 2.37s puts the hide at 13.2s = the outro start for the 15s
+    // cycle. Re-derive this pause whenever the cycle or the reply pace moves.
+    { type: 'widget', id: 'chips-2', duration: '0.4s', pause: '2.37s' },
     { type: 'transition', hide: 'chips-2', show: 'noop-end', duration: '0.9s', slideOutY: '0px' },
   ],
 };

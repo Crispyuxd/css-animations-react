@@ -13,7 +13,7 @@ import type { TimelineConfig } from '@/lib/types';
 //   -152  bot-text anchor (camera pans down to focus on calendar)
 
 export const timeline: TimelineConfig = {
-  cycle: '15s',
+  cycle: '13.5s',
   introHold: '0.54s',
   outroFade: '0.9s',
   metaFadeIn: '0.36s',

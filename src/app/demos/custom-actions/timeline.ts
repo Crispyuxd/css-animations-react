@@ -13,7 +13,7 @@ import type { TimelineConfig } from '@/lib/types';
 //   -76  user-1 anchor — bot-1+meta-0 scroll up together
 
 export const timeline: TimelineConfig = {
-  cycle: '10.5s',
+  cycle: '9s',
   introHold: '0.54s',
   outroFade: '0.9s',
   metaFadeIn: '0.36s',

@@ -34,7 +34,7 @@ import type { TimelineConfig } from '@/lib/types';
 //                  slightly per line and stays well under the AI's pace.
 
 export const timeline: TimelineConfig = {
-  cycle: '17.5s',
+  cycle: '16s',
   introHold: '0.54s',
   outroFade: '0.9s',
   metaFadeIn: '0.36s',
