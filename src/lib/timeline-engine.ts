@@ -18,14 +18,13 @@ const TYPEWRITER_LINE_GAP_MS = 120;
 const USER_POP_MS = 480;
 const USER_OPACITY_CUT_MS = 100;
 
-// Thinking trace, ported from the product widget (sunshine/message-trace.tsx).
-// The header fades in, dwells, then cuts to "Completed N actions" while the
-// spinning mark collapses its width over 300ms ease-out so the label slides
-// left into the vacated space (~360ms total there, of which the collapse is
-// the visible part).
-const THINKING_FADE_IN_MS = 240;
+// Trace-off pending indicator, ported from the product widget
+// (chatbase-agents `MessageTrace status="thinking" steps={[]}`, Storybook
+// UI/Message Trace → Thinking No Trace). The widget mounts it with
+// `fade-in 200ms ease-out both` while awaiting a reply and unmounts it the
+// moment the reply lands, so the exit is a hard cut, not a fade.
+const THINKING_FADE_IN_MS = 200;
 const THINKING_DWELL_MS = 1200;
-const THINKING_SETTLE_MS = 300;
 
 // Per-line speed. LINEAR in the line index (90 → 130.5 → 171 …), not
 // compounding — matches the product's `baseCps * (1 + index * accel)`.
@@ -232,38 +231,23 @@ export function generateTimelineCSS(config: TimelineConfig): string {
     else if (step.type === 'thinking') {
       const fadeIn = parseMs(step.fadeIn || THINKING_FADE_IN_MS);
       const dwell = parseMs(step.duration || THINKING_DWELL_MS);
-      const settleMs = parseMs(step.settle || THINKING_SETTLE_MS);
       const inEnd = pct(cursor + fadeIn);
-      // The label swap is a hard cut (a DOM swap in the product), so the two
-      // stops sit 1ms apart and need the higher-precision pct to stay distinct.
-      const swap = pctP(cursor + dwell);
-      const swapped = pctP(cursor + dwell + 1);
-      const settleEnd = pct(cursor + dwell + settleMs);
+      // The exit is a hard cut (the widget unmounts the indicator as the reply
+      // mounts), so the two stops sit 1ms apart and need the higher-precision
+      // pct to stay distinct. Plain ease-out matches the product's fade-in.
+      const cutStart = pctP(cursor + dwell);
+      const cutEnd = pctP(cursor + dwell + 1);
 
       rules.push(`@keyframes think-${step.id} {
   0%, ${startPct}% { opacity: 0; }
   ${inEnd}% { opacity: 1; }
-  ${swap}% { opacity: 1; }
-  ${swapped}%, 100% { opacity: 0; }
+  ${cutStart}% { opacity: 1; }
+  ${cutEnd}%, 100% { opacity: 0; }
 }`);
-      rules.push(`#${step.id}-thinking { animation: think-${step.id} ${cycleStr} var(--ease-out-quart) infinite both; will-change: opacity; }`);
+      rules.push(`#${step.id} { animation: think-${step.id} ${cycleStr} ease-out infinite both; will-change: opacity; }`);
 
-      rules.push(`@keyframes think-done-${step.id} {
-  0%, ${swap}% { opacity: 0; }
-  ${swapped}%, 100% { opacity: 1; }
-}`);
-      rules.push(`#${step.id}-done { animation: think-done-${step.id} ${cycleStr} linear infinite both; will-change: opacity; }`);
-
-      // Plain ease-out, not --ease-out-quart: the quart curve overshoots, and
-      // a width/opacity collapse has nothing to overshoot into.
-      rules.push(`@keyframes think-mark-${step.id} {
-  0%, ${swap}% { width: 16px; margin-right: 6px; opacity: 1; }
-  ${settleEnd}%, 100% { width: 0; margin-right: 0; opacity: 0; }
-}`);
-      rules.push(`#${step.id}-mark { animation: think-mark-${step.id} ${cycleStr} ease-out infinite both; }`);
-
-      // The reply starts typing at the swap, so the mark's collapse overlaps
-      // its first line — the product's enterFromThinking beat.
+      // The reply starts typing at the cut, so the indicator is gone on the
+      // frame the first characters appear — never both at once.
       cursor += dwell + parseMs(step.pause || '0s');
     }
 

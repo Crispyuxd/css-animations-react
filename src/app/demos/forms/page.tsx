@@ -3,7 +3,8 @@
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
   FormCard, FormInputRow, FormTextareaRow, AttachButton, AttachmentItem, CaseCreatedCard,
-  CTAButton, DemoCursor, DemoState, ThinkingTrace,
+  CTAButton, DemoCursor, DemoState,
+  ThinkingTrace,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -37,18 +38,13 @@ export default function FormsDemo() {
 
             <UserMessage id="user-1" style={{ marginTop: 0, marginBottom: 0 }}>I want to submit a support case</UserMessage>
 
-            {/* Trace sits outside the bot-text wrapper so it survives the
-                bot-2 → bot-3 cross-fade. marginBottom trims the stack's 32
-                gap to the internal-to-turn 8. */}
-            <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -24 }} />
-
             {/* Bot text — bot-2 cross-fades to bot-3 in the same position so
                 the message "updates in place". Wrapper sizes to bot-2 (1 line)
                 so the form-card sits flush; bot-3 line 2 (~19.6px at lh 1.4 ×
                 14px) fits into the 20px flex gap below before the card area. */}
             <div style={{ position: 'relative', width: '100%' }}>
               <div id="state-form-bot">
-                <BotMessage id="bot-2" lines={["No problem! Let's create one."]} />
+                <BotMessage id="bot-2" trace={<ThinkingTrace id="trace-1" />} lines={["No problem! Let's create one."]} />
               </div>
               <div id="state-success-bot" style={{ position: 'absolute', top: 0, left: 0, right: 0, opacity: 0 }}>
                 <BotMessage

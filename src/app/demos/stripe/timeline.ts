@@ -9,27 +9,20 @@ import type { TimelineConfig } from '@/lib/types';
 // Layout offsets (in #stripe-scroll, gap=32 with marginTop:-12 on state wrapper):
 //   bot-1+meta-0: 0..44
 //   user-1:       76..121
-//   trace-1:      153..173 (fixed 20 row, marginBottom -24 → 8 to bot-2)
-//   bot-2:        181..201 (1 line, no meta)
-//   state slot:   221..(card+gap+meta)   ← top = 181+20+32-12 = 221
+//   bot-2:        153..173 (1 line, no meta)
+//   state slot:   193..(card+gap+meta)   ← top = 153+20+32-12 = 193
 //
-// Tall cards (subs 462, picker 452) — both fit at scrollY = −175:
-//   subs meta-1 bottom: 221+462+12+16 = 711 → content-box y = 536 (forms-style anchor)
-//   picker meta-2 bottom: 221+452+12+16 = 701 → content-box y = 526
-//   bot-2 padding-box y = 20+181−175 = 26 (just past inset minimum; tight but valid)
-//   trace-1 padding-box y = 20+153−175 = −2, so the row's top 2px sit above the
-//     clip edge at the deepest pan. That band is line-box leading (14px glyphs
-//     sit ~5..15 inside the 20px row), so nothing legible is cut. This demo has
-//     the tallest cards in the set, and after the trace row the whole turn is
-//     538px against a 536px content box — 2px is the entire overflow.
+// Tall cards (subs 462, picker 452) — both fit at scrollY = −147:
+//   subs meta-1 bottom: 193+462+12+16 = 683 → content-box y = 536 (forms-style anchor)
+//   picker meta-2 bottom: 193+452+12+16 = 673 → content-box y = 526
+//   bot-2 padding-box y = 20+153−147 = 26 (just past inset minimum; tight but valid)
 //
 // BillSummaryCard 371 — camera pulls back to user-1 anchor (−76):
-//   bill meta-3 bottom: 221+371+12+16 = 620 → padding-box y = 20+620−76 = 564
-//     (12px before the 576 clip edge, was 40px before the trace row)
+//   bill meta-3 bottom: 193+371+12+16 = 592 → padding-box y = 20+592−76 = 536 (in clip)
 //   user-1 padding-box y = 20+76−76 = 20 (anchored at inset)
 //
 // CaseCreatedCard 121 (inside state-success with internal marginTop:12):
-//   success-card top scroll-y = 221+12 = 233. At −76, padding-box y = 177.
+//   success-card top scroll-y = 193+12 = 205. At −76, padding-box y = 149.
 //   Plenty of headroom; same camera as bill.
 
 export const timeline: TimelineConfig = {
@@ -47,7 +40,7 @@ export const timeline: TimelineConfig = {
     { type: 'scroll', target: 'stripe-scroll', y: -76, duration: '0.5s', parallel: true },
     { type: 'user', id: 'user-1', pause: '0.24s' },
 
-    // Subscription lookup runs behind the thinking header.
+    // Subscription lookup runs behind the pending indicator.
     { type: 'thinking', id: 'trace-1' },
 
     // === Bot offers the subscriptions card (1 line, ~44 chars) ===
@@ -56,7 +49,7 @@ export const timeline: TimelineConfig = {
     // === Camera pans deep so the tall SubscriptionsCard (462) + meta-1 fit
     //     at content-box bottom. Same scroll holds for the picker (452) so
     //     the morph between them keeps the camera steady. ===
-    { type: 'scroll', target: 'stripe-scroll', y: -175, duration: '0.6s', parallel: true },
+    { type: 'scroll', target: 'stripe-scroll', y: -147, duration: '0.6s', parallel: true },
     { type: 'widget', id: 'state-subscriptions', duration: '0.55s', slideY: '12px', pause: '0.18s', ease: 'var(--ease-scroll)' },
     { type: 'meta', id: 'meta-1', fadeIn: '0.36s', hold: '0s', fadeOut: '0s', parallel: true },
 

@@ -2,7 +2,8 @@
 
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
-  CTAButton, ThinkingTrace,
+  CTAButton,
+  ThinkingTrace,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -23,11 +24,9 @@ export default function ButtonDemo() {
 
             <UserMessage id="user-1">Can you redirect me to pricing page?</UserMessage>
 
-            {/* marginBottom trims the stack's 20 gap to the internal-to-turn 8 */}
-            <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -12 }} />
-
             <BotMessage
               id="bot-2"
+              trace={<ThinkingTrace id="trace-1" />}
               lines={['Sure, please click on this button:']}
               slot={<CTAButton id="btn-pricing">Visit our pricing page</CTAButton>}
               meta={<MetaRow id="meta-1" positioned={false} gap={12} />}

@@ -5,8 +5,7 @@ import type { TimelineConfig } from '@/lib/types';
 // height 16 → adds 24 to its bot's height):
 //   bot-1 botBlock      0..44   (text 0..20, meta-0 inline at 28..44)
 //   user-1 row         76..120  (margin 12, bubble 44 — single line)
-//   trace-1           152..172  (fixed 20 row, marginBottom -12 → 8 to bot-2)
-//   bot-2 botBlock    180..444  (text 180..420, meta-1 inline 428..444)
+//   bot-2 botBlock    152..416  (text 152..392, meta-1 inline 400..416)
 //
 // .messages has 20px padding + overflow:hidden.
 // User-message anchor at padding-box y = 20 (inset edge):
@@ -45,7 +44,7 @@ export const timeline: TimelineConfig = {
     { type: 'transition', hide: 'chips-1', show: 'noop-chips-out', duration: '0.5s', parallel: true },
     { type: 'user', id: 'user-1', pause: '0.24s' },
 
-    // Knowledge-base lookup runs behind the thinking header.
+    // Knowledge-base lookup runs behind the pending indicator.
     { type: 'thinking', id: 'trace-1' },
 
     // Bot replies — 12 lines at streaming pace. meta-1 stays visible.
@@ -59,9 +58,7 @@ export const timeline: TimelineConfig = {
     // Chips return so the loop reads as a fresh prompt opportunity. Pause
     // is sized so the fade-out lands inside the messagesStack outro window
     // (cycleMs − outroFade − 0.9s … cycleMs − 0.9s) and the duration matches
-    // outroFade so chips and messages fade in lockstep. chips-2 lands at
-    // 10.83s, so 2.37s puts the hide at 13.2s = the outro start for the 15s
-    // cycle. Re-derive this pause whenever the cycle or the reply pace moves.
+    // outroFade so chips and messages fade in lockstep.
     { type: 'widget', id: 'chips-2', duration: '0.4s', pause: '2.37s' },
     { type: 'transition', hide: 'chips-2', show: 'noop-end', duration: '0.9s', slideOutY: '0px' },
   ],

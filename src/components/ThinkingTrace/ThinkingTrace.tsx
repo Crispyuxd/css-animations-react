@@ -3,42 +3,31 @@ import { ThinkingMark } from '@/icons';
 
 interface ThinkingTraceProps {
   id: string;
-  /** Shown as "Completed N actions" once the trace settles. */
-  count?: number;
-  /** Negative marginBottom to trim the stack gap to the internal-to-turn 8px
-   *  (see docs/CHAT_LAYOUT.md — the trace belongs to the reply below it). */
-  style?: React.CSSProperties;
 }
 
 /**
- * The product widget's message trace, header only
- * (sunshine/message-trace.tsx MessageTrace, collapsed disclosure).
+ * The product widget's trace-off pending indicator — the spinning stacked-cube
+ * mark plus a shimmering "Thinking", and nothing else.
  *
- * Two states stacked in a fixed-height row so nothing below ever shifts: the
- * spinning mark plus a shimmering "Thinking", and "Completed N actions". The
- * `thinking` timeline step fades the first in, then cuts to the second while
- * the mark collapses its width so the label slides left into the gap. The
- * label swap is instant on purpose — that is a DOM swap in the product, and
- * the eye tracks the collapsing mark, not the text.
+ * Source: chatbase-agents `MessageTrace status="thinking" steps={[]}`
+ * (Storybook: UI/Message Trace → Thinking No Trace). With no steps there is no
+ * chevron, no disclosure, nothing interactive, and the component renders null
+ * the moment the reply lands. Quoting the story: "This is the pending indicator
+ * every widget shows in place of the old typing dots."
+ *
+ * It replaces the reply rather than sitting above it, so it is absolutely
+ * positioned over the bot message's first line and takes no layout space at
+ * all. The `thinking` timeline step fades it in over 200ms and cuts it at the
+ * exact frame the reply starts typing, which is how the widget behaves: the
+ * indicator unmounts as the message mounts, never both at once.
  */
-export function ThinkingTrace({ id, count = 1, style }: ThinkingTraceProps) {
+export function ThinkingTrace({ id }: ThinkingTraceProps) {
   return (
-    <div className={styles.trace} style={style}>
-      <span id={`${id}-thinking`} className={styles.state}>
-        <span className={styles.markBox}>
-          <span className={styles.mark}><ThinkingMark /></span>
-        </span>
-        <span className={styles.shimmer}>Thinking</span>
+    <span id={id} className={styles.trace} aria-hidden>
+      <span className={styles.markBox}>
+        <span className={styles.mark}><ThinkingMark /></span>
       </span>
-
-      <span id={`${id}-done`} className={styles.state}>
-        {/* Width/margin/opacity animated by the timeline; the spin lives on the
-            inner span so the generated id rule can't replace it. */}
-        <span id={`${id}-mark`} className={styles.markBox}>
-          <span className={styles.mark}><ThinkingMark /></span>
-        </span>
-        <span>Completed {count} {count === 1 ? 'action' : 'actions'}</span>
-      </span>
-    </div>
+      <span className={styles.shimmer}>Thinking</span>
+    </span>
   );
 }

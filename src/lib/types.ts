@@ -34,11 +34,11 @@ export type TimelineStep =
   | { type: 'bot'; id: string; duration?: TimeValue; pause?: TimeValue; lines?: number | number[]; cps?: number; accel?: number; meta?: MetaConfig; caret?: boolean }
   | { type: 'user'; id: string; duration?: TimeValue; pause?: TimeValue }
   | { type: 'meta'; id: string; fadeIn?: TimeValue; hold?: TimeValue; fadeOut?: TimeValue; pause?: TimeValue; parallel?: boolean }
-  // Renders against a <ThinkingTrace id={id} />. `duration` is the dwell on
-  // "Thinking" before it cuts to "Completed N actions"; `settle` is the mark's
-  // width collapse. The cursor advances by `duration` only, so the reply that
-  // follows types while the mark collapses.
-  | { type: 'thinking'; id: string; duration?: TimeValue; fadeIn?: TimeValue; settle?: TimeValue; pause?: TimeValue }
+  // Drives a <ThinkingTrace id={id} /> (the trace-off pending indicator, passed
+  // to BotMessage's `trace` slot). `duration` is how long "Thinking" holds
+  // before it cuts out; the cursor advances by exactly that, so the reply below
+  // starts typing on the frame the indicator disappears.
+  | { type: 'thinking'; id: string; duration?: TimeValue; fadeIn?: TimeValue; pause?: TimeValue }
   | { type: 'divider'; id: string; duration?: TimeValue; pause?: TimeValue }
   | { type: 'widget'; id: string; duration?: TimeValue; pause?: TimeValue; slideY?: string; collapse?: { height: string; marginTop?: string }; shimmer?: boolean; ease?: string; parallel?: boolean }
   | { type: 'cursor'; id: string; startX?: number; startY?: number; appear?: TimeValue; waypoints: CursorWaypoint[]; rest?: { x?: number; y?: number; travel?: TimeValue } }

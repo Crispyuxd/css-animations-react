@@ -21,11 +21,9 @@ export default function CustomActionsDemo() {
             Check my account status
           </UserMessage>
 
-          {/* marginBottom trims the stack's 20 gap to the internal-to-turn 8 */}
-          <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -12 }} />
-
           <BotMessage
             id="bot-2"
+            trace={<ThinkingTrace id="trace-1" />}
             lines={[
               'Your account is active and in good standing. Your current',
               'plan renews on May 1, 2025.',

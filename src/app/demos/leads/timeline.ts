@@ -27,10 +27,7 @@ export const timeline: TimelineConfig = {
     { type: 'bot', id: 'bot-2', lines: [58, 28], pause: '0.36s' },
 
     // Form-card slides in below bot-2. No camera pan — the form (244 tall)
-    // + meta-1 still fits inside the content-box at the user-1 anchor (-76)
-    // after the trace row pushed the card top 212 → 240: meta-1 bottom lands
-    // at padding-box 20 + (240+244+12+16) − 76 = 456, well inside the 556
-    // content-box bottom.
+    // + meta-1 fits inside the content-box at the user-1 anchor (-76).
     { type: 'widget', id: 'form-card', duration: '0.55s', slideY: '12px', pause: '0.18s' },
 
     // "Just now" timestamp fades in alongside the form-card arrival.

@@ -2,7 +2,8 @@
 
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
-  CalendarWidget, CallBooked, DemoCursor, DemoState, ThinkingTrace,
+  CalendarWidget, CallBooked, DemoCursor, DemoState,
+  ThinkingTrace,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -36,15 +37,10 @@ export default function CalendarDemo() {
             I&apos;d like to book a demo
           </UserMessage>
 
-          {/* Trace sits outside the bot-text wrapper so it survives the
-              bot-2 → bot-2-booked cross-fade. marginBottom trims the stack's
-              20 gap to the internal-to-turn 8. */}
-          <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -12 }} />
-
           {/* Bot text wrapper — bot-2 cross-fades to bot-2-booked */}
           <div style={{ position: 'relative', width: '100%' }}>
             <div id="state-calendar-bot">
-              <BotMessage id="bot-2" lines={['Sure, pick a time that works for you.']} />
+              <BotMessage id="bot-2" trace={<ThinkingTrace id="trace-1" />} lines={['Sure, pick a time that works for you.']} />
             </div>
             <div id="state-booked-bot" style={{ position: 'absolute', top: 0, left: 0, right: 0, opacity: 0 }}>
               <BotMessage id="bot-2-booked" lines={["Done! Here's what you scheduled."]} />

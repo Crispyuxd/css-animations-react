@@ -5,12 +5,11 @@ import type { TimelineConfig } from '@/lib/types';
 // in-flow at margin-top 8, height 16 → adds 24 to its bot's height):
 //   bot-1 botBlock      0..44   (text 0..20, meta-0 inline at 28..44)
 //   user-1 row         76..120
-//   trace-1           152..172  (fixed 20 row, marginBottom -12 → 8 to bot-2)
-//   bot-2 botBlock    180..244  (text 180..220, meta-1 inline 228..244)
-//   divider-1         276..292
-//   bot-3 botBlock    324..368  (text 324..344, meta-2 inline 352..368)
-//   user-2 row        400..466
-//   bot-4 botBlock    498..542  (text 498..518, meta-3 inline 526..542)
+//   bot-2 botBlock    152..216  (text 152..192, meta-1 inline 200..216)
+//   divider-1         248..264
+//   bot-3 botBlock    296..340  (text 296..316, meta-2 inline 324..340)
+//   user-2 row        372..438
+//   bot-4 botBlock    470..514  (text 470..490, meta-3 inline 498..514)
 //
 // .messages has 20px padding + overflow:hidden. Element lands at
 // padding-box y G when:  offsetTop + 20 + scrollY = G
@@ -18,9 +17,8 @@ import type { TimelineConfig } from '@/lib/types';
 // User-message anchors land at padding-box y = 20 (= flush with the
 // content-box top, respecting the 20px inset rule):
 //   -76   user-1 anchor — bot-1+meta-0 scroll up together
-//   -400  user-2 anchor — everything from trace-1 through meta-2 scrolls
-//                         up as one block (was -372 before the trace row
-//                         added 28 above bot-2)
+//   -372  user-2 anchor — everything from bot-2 through meta-2 scrolls
+//                         up as one block
 //
 // All metas use fadeOut '0s' so each timestamp + thumbs row stays at
 // opacity 1 and translates up alongside its bot block during the next
@@ -53,8 +51,8 @@ export const timeline: TimelineConfig = {
     { type: 'scroll', target: 'escalation-scroll', y: -76, duration: '0.5s', parallel: true },
     { type: 'user', id: 'user-1', pause: '0.24s' },
 
-    // The AI thinks before handing off. Mark Kent gets no trace: he is a
-    // person, and the product only traces the agent's own work.
+    // The AI thinks before handing off. Mark Kent gets no indicator:
+    // he is a person, and the widget only shows it for the agent.
     { type: 'thinking', id: 'trace-1' },
 
     // AI bot offers escalation — 2 lines at the same streaming pace as
@@ -74,13 +72,13 @@ export const timeline: TimelineConfig = {
     { type: 'bot', id: 'bot-3', lines: [35], cps: 60, accel: -0.05, pause: '0.36s',
       meta: { id: 'meta-2', hold: '1.44s', fadeOut: '0s' } },
 
-    // user-2 turn-anchor (parallel): y: -400 hides EVERYTHING from trace-1
+    // user-2 turn-anchor (parallel): y: -372 hides EVERYTHING from bot-2
     // through meta-2 — bot-2, meta-1, divider, bot-3, and meta-2 all
     // translate up together as one block — and lands user-2 at padding-box
     // y=20 (the inset edge). 0.75s duration (vs the user-1 anchor's 0.5s)
     // because this scroll covers ~296px of travel; the longer duration
     // keeps the motion calm.
-    { type: 'scroll', target: 'escalation-scroll', y: -400, duration: '0.75s', parallel: true },
+    { type: 'scroll', target: 'escalation-scroll', y: -372, duration: '0.75s', parallel: true },
     { type: 'user', id: 'user-2', pause: '0.72s' },
 
     // Mark's reply — same human-agent cadence as bot-3. meta-3 has no hold

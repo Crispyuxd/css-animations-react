@@ -8,11 +8,16 @@ interface BotMessageProps {
   lines?: BotLine[];
   meta?: React.ReactNode;
   slot?: React.ReactNode;
+  /** Trace-off pending indicator (<ThinkingTrace />). Absolutely positioned
+   *  over this message's first line, so it costs no layout height and the
+   *  reply types in exactly where it was. */
+  trace?: React.ReactNode;
 }
 
-export function BotMessage({ id, children, lines, meta, slot }: BotMessageProps) {
+export function BotMessage({ id, children, lines, meta, slot, trace }: BotMessageProps) {
   return (
     <div className={styles.botBlock}>
+      {trace}
       {lines ? (
         <p id={id} className={`${styles.msg} ${styles.botMsg}`}>
           {lines.map((line, i) => {

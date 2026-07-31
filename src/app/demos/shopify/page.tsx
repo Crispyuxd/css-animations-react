@@ -26,11 +26,6 @@ export default function ShopifyDemo() {
             Show me categories on sale
           </UserMessage>
 
-          {/* Trace sits outside the bot-text wrapper so it survives the
-              bot-2 → bot-3 untype/swap. marginBottom trims the stack's 20 gap
-              to the internal-to-turn 8. */}
-          <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -12 }} />
-
           <div style={{ position: 'relative' }}>
             {/* Bot text — bot-2 untypes/backspaces and bot-3 types in at the
                 success state, matching the forms demo's untype→swap→type
@@ -40,7 +35,7 @@ export default function ShopifyDemo() {
                 wrapper is absolutely positioned over state-shopify-bot so
                 they occupy the same line. */}
             <div id="state-shopify-bot">
-              <BotMessage id="bot-2" lines={["Here's a list of categories currently on sale:"]} />
+              <BotMessage id="bot-2" trace={<ThinkingTrace id="trace-1" />} lines={["Here's a list of categories currently on sale:"]} />
             </div>
             <div id="state-success-bot" style={{ position: 'absolute', top: 0, left: 0, right: 0, opacity: 0 }}>
               <BotMessage id="bot-3" lines={['Done! You have placed an order for 2 items.']} />

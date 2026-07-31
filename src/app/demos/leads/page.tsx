@@ -2,7 +2,8 @@
 
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
-  FormCard, FormInputRow, CaseCreatedCard, CTAButton, DemoCursor, DemoState, ThinkingTrace,
+  FormCard, FormInputRow, CaseCreatedCard, CTAButton, DemoCursor, DemoState,
+  ThinkingTrace,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -28,11 +29,6 @@ export default function LeadsDemo() {
             I want to schedule a demo with your team
           </UserMessage>
 
-          {/* Trace sits outside the bot-text wrapper so it survives the
-              bot-2 → bot-3 cross-fade. marginBottom trims the stack's 32
-              gap to the internal-to-turn 8. */}
-          <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -24 }} />
-
           {/* Bot text — bot-2 cross-fades to bot-3 in the same wrapper.
               Wrapper sizes to bot-2 (2 lines); bot-3 has 3 lines so its
               third line overflows into the 20px internal-to-turn gap below
@@ -41,6 +37,7 @@ export default function LeadsDemo() {
             <div id="state-form-bot">
               <BotMessage
                 id="bot-2"
+                trace={<ThinkingTrace id="trace-1" />}
                 lines={[
                   `I'd love to set that up for you. Just fill in your details`,
                   `and we'll reach out shortly.`,

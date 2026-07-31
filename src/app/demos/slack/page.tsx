@@ -21,11 +21,9 @@ export default function SlackDemo() {
             Notify the sales team that the Acme deal closed
           </UserMessage>
 
-          {/* marginBottom trims the stack's 20 gap to the internal-to-turn 8 */}
-          <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -12 }} />
-
           <BotMessage
             id="bot-2"
+            trace={<ThinkingTrace id="trace-1" />}
             lines={[
               'Done. I\'ve posted to #sales-team on Slack: "The Acme',
               'deal has just closed. Great work, team!" The message',

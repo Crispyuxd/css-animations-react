@@ -5,8 +5,7 @@ import type { TimelineConfig } from '@/lib/types';
 // height 16 → adds 24 to its bot's height):
 //   bot-1 botBlock      0..44   (text 0..20, meta-0 inline at 28..44)
 //   user-1 row         76..120  (margin 12, bubble 44 — single line)
-//   trace-1           152..172  (fixed 20 row, marginBottom -12 -> 8 to bot-2)
-//   bot-2 botBlock    180..264  (text 180..240, meta-1 inline 248..264)
+//   bot-2 botBlock    152..236  (text 152..212, meta-1 inline 220..236)
 //
 // .messages has 20px padding + overflow:hidden.
 // User-message anchor at padding-box y = 20 (inset edge):
@@ -31,7 +30,7 @@ export const timeline: TimelineConfig = {
     { type: 'scroll', target: 'slack-scroll', y: -76, duration: '0.5s', parallel: true },
     { type: 'user', id: 'user-1', pause: '0.24s' },
 
-    // Slack post runs behind the thinking header; the reply types out of it.
+    // Slack post runs behind the pending indicator.
     { type: 'thinking', id: 'trace-1' },
 
     // Bot-2 response — 3 lines at streaming pace. meta-1 stays visible until
