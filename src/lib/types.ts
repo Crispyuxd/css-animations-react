@@ -26,9 +26,19 @@ export interface CursorWaypoint {
 }
 
 export type TimelineStep =
+  // `lines` as number[] = per-line char counts (proportional typing).
+  // `cps` = base chars/sec for line 1, default 90 (product base).
+  // `accel` = LINEAR per-line speed-up, default 0.45 → line N types at
+  //   cps * (1 + (N-1) * accel). Negative decelerates (human typist).
+  //   Note this is not the old compounding cps * accel^(N-1).
   | { type: 'bot'; id: string; duration?: TimeValue; pause?: TimeValue; lines?: number | number[]; cps?: number; accel?: number; meta?: MetaConfig; caret?: boolean }
   | { type: 'user'; id: string; duration?: TimeValue; pause?: TimeValue }
   | { type: 'meta'; id: string; fadeIn?: TimeValue; hold?: TimeValue; fadeOut?: TimeValue; pause?: TimeValue; parallel?: boolean }
+  // Drives a <ThinkingTrace id={id} /> (the trace-off pending indicator, passed
+  // to BotMessage's `trace` slot). `duration` is how long "Thinking" holds
+  // before it cuts out; the cursor advances by exactly that, so the reply below
+  // starts typing on the frame the indicator disappears.
+  | { type: 'thinking'; id: string; duration?: TimeValue; fadeIn?: TimeValue; pause?: TimeValue }
   | { type: 'divider'; id: string; duration?: TimeValue; pause?: TimeValue }
   | { type: 'widget'; id: string; duration?: TimeValue; pause?: TimeValue; slideY?: string; collapse?: { height: string; marginTop?: string }; shimmer?: boolean; ease?: string; parallel?: boolean }
   | { type: 'cursor'; id: string; startX?: number; startY?: number; appear?: TimeValue; waypoints: CursorWaypoint[]; rest?: { x?: number; y?: number; travel?: TimeValue } }

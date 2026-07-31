@@ -1,0 +1,81 @@
+/* Absolutely positioned over the bot message's first line (BotMessage's
+   .botBlock is already position: relative), so the indicator takes no layout
+   space and vanishing it shifts nothing. font-size + line-height match
+   BotMessage's .msg (14px / 1.4) so it sits exactly where the reply's first
+   line will type in. */
+.trace {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  /* -0.02em at 14px, matching the product header's tracking. */
+  letter-spacing: -0.28px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  pointer-events: none;
+  /* The timeline drives both: visibility keeps the label out of the
+     accessibility tree (and out of paint) outside its visible window. */
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* 6px = --spaceXXS, the product's gap between the mark and the label. */
+.markBox {
+  display: inline-flex;
+  flex: none;
+  width: 16px;
+  margin-right: 6px;
+}
+
+.mark {
+  display: inline-flex;
+  flex: none;
+  width: 16px;
+  height: 18px;
+  animation: thinkingSpin 2.4s linear infinite;
+}
+
+/* Near-white peak at the sweep centre, per sunshine/widget.css text-shimmer +
+   the product's light-surface gradient. */
+.shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--text-muted) 0%,
+    var(--text-muted) 42%,
+    color-mix(in srgb, var(--text-muted) 30%, white) 50%,
+    var(--text-muted) 58%,
+    var(--text-muted) 100%
+  );
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: textShimmer 4s ease-in-out infinite;
+}
+
+@keyframes thinkingSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes textShimmer {
+  0% { background-position: 100% center; }
+  55% { background-position: 0% center; }
+  100% { background-position: 0% center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark,
+  .shimmer {
+    animation: none;
+  }
+  .shimmer {
+    color: var(--text-muted);
+    background-image: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+  }
+}

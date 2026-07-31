@@ -3,6 +3,7 @@
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
   FormCard, FormInputRow, CaseCreatedCard, CTAButton, DemoCursor, DemoState,
+  ThinkingTrace,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -36,6 +37,7 @@ export default function LeadsDemo() {
             <div id="state-form-bot">
               <BotMessage
                 id="bot-2"
+                trace={<ThinkingTrace id="trace-1" />}
                 lines={[
                   `I'd love to set that up for you. Just fill in your details`,
                   `and we'll reach out shortly.`,

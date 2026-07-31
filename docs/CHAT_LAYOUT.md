@@ -96,6 +96,34 @@ this is the trap that kept biting me. The `.positioned` class supplies
 no element below the meta), e.g. a single-message intro. Don't enable
 it for anything else.
 
+## ThinkingTrace — zero layout footprint, by design
+
+`ThinkingTrace` is the product's trace-off pending indicator: the spinning mark
+plus a shimmering "Thinking". In the widget it **replaces** the reply rather
+than sitting above it (it is what the old typing dots became), and it unmounts
+the moment the message arrives.
+
+So it is **absolutely positioned over its bot message's first line** and takes
+no layout space at all. **No offset below it moves. No scroll anchor changes.**
+Pass it through `BotMessage`'s `trace` slot, never as a stack child:
+
+```tsx
+<BotMessage id="bot-2" trace={<ThinkingTrace id="trace-1" />} lines={[...]} />
+```
+
+`.botBlock` is already `position: relative`, so the indicator anchors to the
+message. Its `font-size` / `line-height` match `.msg` (14px / 1.4) so it sits
+exactly where the reply's first line types in.
+
+Two rules:
+
+1. **Put it on the message that types out of the wait**, i.e. the first reply
+   (`bot-2`). Not on a greeting, and not on a human agent's message
+   (escalation's Mark Kent).
+2. **Never leave it visible past the cut.** The `thinking` step ends with a hard
+   1ms opacity cut timed to the frame the reply starts typing, matching the
+   widget's unmount. Indicator and reply are never both on screen.
+
 ## Computing layout offsets
 
 For a typical bot-1 → user-1 → bot-2 → divider → bot-3 → user-2 → bot-4

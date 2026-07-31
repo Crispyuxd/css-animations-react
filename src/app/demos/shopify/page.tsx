@@ -3,6 +3,7 @@
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
   CategoriesWidget, PickerWidget, ProductSheet, SheetOverlay, CartWidget, OrderSuccessWidget, DemoCursor, DemoState,
+  ThinkingTrace,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -34,7 +35,7 @@ export default function ShopifyDemo() {
                 wrapper is absolutely positioned over state-shopify-bot so
                 they occupy the same line. */}
             <div id="state-shopify-bot">
-              <BotMessage id="bot-2" lines={["Here's a list of categories currently on sale:"]} />
+              <BotMessage id="bot-2" trace={<ThinkingTrace id="trace-1" />} lines={["Here's a list of categories currently on sale:"]} />
             </div>
             <div id="state-success-bot" style={{ position: 'absolute', top: 0, left: 0, right: 0, opacity: 0 }}>
               <BotMessage id="bot-3" lines={['Done! You have placed an order for 2 items.']} />

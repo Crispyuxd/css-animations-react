@@ -12,7 +12,7 @@ import type { TimelineConfig } from '@/lib/types';
 //   -76  user-1 anchor — bot-1+meta-0 scroll up together
 
 export const timeline: TimelineConfig = {
-  cycle: '10s',
+  cycle: '9s',
   introHold: '0.54s',
   outroFade: '0.9s',
   metaFadeIn: '0.36s',
@@ -20,7 +20,7 @@ export const timeline: TimelineConfig = {
   metaFadeOut: '0.36s',
   steps: [
     // AI bot greets — meta-0 fadeOut '0s' so it scrolls up with bot-1
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s',
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s',
       meta: { id: 'meta-0', fadeOut: '0s' } },
 
     // user-1 turn-anchor (parallel): scroll runs concurrently with the
@@ -28,10 +28,13 @@ export const timeline: TimelineConfig = {
     // frame. y: -76 lands user-1 at padding-box y=20 (the inset edge)
     // and lifts bot-1 + meta-0 above the visible viewport.
     { type: 'scroll', target: 'button-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', duration: '0.4s', pause: '0.72s' },
+    { type: 'user', id: 'user-1', pause: '0.24s' },
+
+    // Agent thinks; the indicator cuts out as the reply starts typing.
+    { type: 'thinking', id: 'trace-1' },
 
     // Bot replies — single line typewriter
-    { type: 'bot', id: 'bot-2', lines: [34], cps: 45, accel: 1, pause: '0.3s' },
+    { type: 'bot', id: 'bot-2', lines: [34], pause: '0.3s' },
 
     // CTA button slides in right after the bot text finishes
     { type: 'widget', id: 'btn-pricing', duration: '0.4s', pause: '0.3s' },

@@ -12,7 +12,7 @@ import type { TimelineConfig } from '@/lib/types';
 //   -76  user-1 anchor — bot-1+meta-0 scroll up together
 
 export const timeline: TimelineConfig = {
-  cycle: '27.5s',
+  cycle: '26.5s',
   introHold: '0.54s',
   outroFade: '0.9s',
   metaFadeIn: '0.36s',
@@ -20,7 +20,7 @@ export const timeline: TimelineConfig = {
   metaFadeOut: '0.36s',
   steps: [
     // AI bot greets — meta-0 fadeOut '0s' so it scrolls up with bot-1
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s',
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s',
       meta: { id: 'meta-0', fadeOut: '0s' } },
 
     // user-1 turn-anchor (parallel): scroll runs concurrently with the
@@ -28,12 +28,15 @@ export const timeline: TimelineConfig = {
     // frame. y: -76 lands user-1 at padding-box y=20 (the inset edge)
     // and lifts bot-1 + meta-0 above the visible viewport.
     { type: 'scroll', target: 'shopify-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', duration: '0.4s', pause: '0.72s' },
+    { type: 'user', id: 'user-1', pause: '0.24s' },
+
+    // Catalog lookup runs behind the pending indicator.
+    { type: 'thinking', id: 'trace-1' },
 
     // Bot offers categories list — `lines:` mode so the engine tracks the
     // line span (#bot-2-line-1) and a later `untype` step can backspace it
-    // ahead of the success transition. 46 chars / cps 45 ≈ 1.02s.
-    { type: 'bot', id: 'bot-2', lines: [46], cps: 45, accel: 1, pause: '0.3s' },
+    // ahead of the success transition. 46 chars at the 90 cps base ≈ 0.51s.
+    { type: 'bot', id: 'bot-2', lines: [46], pause: '0.3s' },
 
     // Phase: categories
     { type: 'widget', id: 'categories-widget', duration: '0.4s', pause: '0.2s' },
@@ -140,7 +143,7 @@ export const timeline: TimelineConfig = {
     // Bot-3 types in the success message during the morph end. cps 120 lands
     // 43 chars in ~0.36s so text resolves around the same time the card
     // morph completes — text and card finish together as one beat.
-    { type: 'bot', id: 'bot-3', lines: [43], cps: 120, accel: 1, pause: '0.3s' },
+    { type: 'bot', id: 'bot-3', lines: [43], cps: 120, pause: '0.3s' },
 
     { type: 'meta', id: 'meta-success', fadeIn: '0.36s', hold: '0s', fadeOut: '0s', parallel: true },
   ],

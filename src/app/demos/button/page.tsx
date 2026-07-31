@@ -3,6 +3,7 @@
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
   CTAButton,
+  ThinkingTrace,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -25,6 +26,7 @@ export default function ButtonDemo() {
 
             <BotMessage
               id="bot-2"
+              trace={<ThinkingTrace id="trace-1" />}
               lines={['Sure, please click on this button:']}
               slot={<CTAButton id="btn-pricing">Visit our pricing page</CTAButton>}
               meta={<MetaRow id="meta-1" positioned={false} gap={12} />}

@@ -1,6 +1,6 @@
 'use client';
 
-import { ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, ConnectedDivider, MessagesStack } from '@/components';
+import { ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, ConnectedDivider, MessagesStack, ThinkingTrace } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
 
@@ -30,6 +30,7 @@ export default function EscalationDemo() {
 
           <BotMessage
             id="bot-2"
+            trace={<ThinkingTrace id="trace-1" />}
             lines={[
               'I understand. Let me connect you with someone who can',
               'help directly.',

@@ -1,6 +1,6 @@
 'use client';
 
-import { ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack } from '@/components';
+import { ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack, ThinkingTrace } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
 
@@ -23,6 +23,7 @@ export default function CustomActionsDemo() {
 
           <BotMessage
             id="bot-2"
+            trace={<ThinkingTrace id="trace-1" />}
             lines={[
               'Your account is active and in good standing. Your current',
               'plan renews on May 1, 2025.',

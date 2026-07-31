@@ -26,7 +26,7 @@ import type { TimelineConfig } from '@/lib/types';
 //   Plenty of headroom; same camera as bill.
 
 export const timeline: TimelineConfig = {
-  cycle: '23s',
+  cycle: '22s',
   introHold: '0.54s',
   outroFade: '0.9s',
   metaFadeIn: '0.36s',
@@ -34,14 +34,17 @@ export const timeline: TimelineConfig = {
   metaFadeOut: '0.36s',
   steps: [
     // === Bot greets ===
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s', meta: { id: 'meta-0', fadeOut: '0s' } },
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s', meta: { id: 'meta-0', fadeOut: '0s' } },
 
     // === Turn-anchor: scroll user-1 to inset edge as it pops in ===
     { type: 'scroll', target: 'stripe-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', duration: '0.54s', pause: '0.36s' },
+    { type: 'user', id: 'user-1', pause: '0.24s' },
+
+    // Subscription lookup runs behind the pending indicator.
+    { type: 'thinking', id: 'trace-1' },
 
     // === Bot offers the subscriptions card (1 line, ~44 chars) ===
-    { type: 'bot', id: 'bot-2', lines: [44], cps: 45, accel: 1, pause: '0.36s' },
+    { type: 'bot', id: 'bot-2', lines: [44], pause: '0.36s' },
 
     // === Camera pans deep so the tall SubscriptionsCard (462) + meta-1 fit
     //     at content-box bottom. Same scroll holds for the picker (452) so
@@ -145,7 +148,7 @@ export const timeline: TimelineConfig = {
     { type: 'shimmer', target: 'success-card', duration: '0.9s' },
 
     // === Bot-3 success line — fast, confident pace ===
-    { type: 'bot', id: 'bot-3', lines: [22], cps: 150, accel: 1.3, pause: '0.3s' },
+    { type: 'bot', id: 'bot-3', lines: [22], cps: 150, accel: 0.3, pause: '0.3s' },
 
     // === Final timestamp ===
     { type: 'meta', id: 'meta-4', fadeIn: '0.36s', hold: '0s', fadeOut: '0s', parallel: true },

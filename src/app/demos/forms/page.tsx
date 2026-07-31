@@ -4,6 +4,7 @@ import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
   FormCard, FormInputRow, FormTextareaRow, AttachButton, AttachmentItem, CaseCreatedCard,
   CTAButton, DemoCursor, DemoState,
+  ThinkingTrace,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -43,7 +44,7 @@ export default function FormsDemo() {
                 14px) fits into the 20px flex gap below before the card area. */}
             <div style={{ position: 'relative', width: '100%' }}>
               <div id="state-form-bot">
-                <BotMessage id="bot-2" lines={["No problem! Let's create one."]} />
+                <BotMessage id="bot-2" trace={<ThinkingTrace id="trace-1" />} lines={["No problem! Let's create one."]} />
               </div>
               <div id="state-success-bot" style={{ position: 'absolute', top: 0, left: 0, right: 0, opacity: 0 }}>
                 <BotMessage

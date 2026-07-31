@@ -3,6 +3,7 @@
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
   SuggestionChips, SuggestionChip, DemoCursor,
+  ThinkingTrace,
 } from '@/components';
 import { PhoneIcon, InvoiceIcon } from '@/icons';
 import { useTimeline } from '@/hooks/useTimeline';
@@ -26,6 +27,7 @@ export default function SuggestedMessagesDemo() {
 
             <BotMessage
               id="bot-2"
+              trace={<ThinkingTrace id="trace-1" />}
               lines={[
                 'We offer four plans:',
                 { bullet: 'Free ($0/mo) with 50 message credits and 1 agent to' },

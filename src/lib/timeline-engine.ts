@@ -1,6 +1,46 @@
 import type { TimelineConfig } from './types';
 import { parseMs } from './parse-ms';
 
+// Typewriter constants, ported verbatim from the Chatbase product widget
+// (chatbase-website/src/components/integrations-page/channel-demos/sunshine/
+// typewriter.tsx → TYPEWRITER_CPS / TYPEWRITER_LINE_ACCEL /
+// TYPEWRITER_LINE_GAP_MS). Streaming reads as accelerating: each successive
+// line is 45% faster than the base, with a beat of silence between lines.
+const TYPEWRITER_CPS = 90;
+const TYPEWRITER_LINE_ACCEL = 0.45;
+const TYPEWRITER_LINE_GAP_MS = 120;
+
+// User-bubble pop, ported from the product widget (sunshine/chat-bubble.tsx
+// ChatBubble variant="user"): y +20 to 0, scale 0.85 to 1 on --ease-pop.
+// The bubble has a solid fill, so opacity is a near-instant cut rather than a
+// cross-fade — fading a filled bubble across the whole move makes the fill
+// wash out mid-flight and reads as two effects instead of one pop.
+const USER_POP_MS = 480;
+const USER_OPACITY_CUT_MS = 100;
+
+// Trace-off pending indicator, ported from the product widget
+// (chatbase-agents `MessageTrace status="thinking" steps={[]}`, Storybook
+// UI/Message Trace → Thinking No Trace). The widget mounts it with
+// `fade-in 200ms ease-out both` while awaiting a reply and unmounts it the
+// moment the reply lands, so the exit is a hard cut, not a fade.
+const THINKING_FADE_IN_MS = 200;
+const THINKING_DWELL_MS = 1200;
+
+// Per-line speed. LINEAR in the line index (90 → 130.5 → 171 …), not
+// compounding — matches the product's `baseCps * (1 + index * accel)`.
+// A negative accel decelerates instead, which is how a human typist reads
+// (escalation's Mark Kent, forms' textarea).
+//
+// The multiplier is floored because a decelerating accel crosses zero on a long
+// enough message (accel -0.08 does it at line 14), and a zero or negative cps
+// would make `chars / cps` Infinity or negative, emitting `Infinity%` keyframe
+// stops that silently break the whole demo. 0.1 is already a 10x slowdown, far
+// past anything readable, so the clamp never alters a real timeline: today's
+// slowest line is forms' sixth at 0.6.
+const LINE_CPS_MIN_FACTOR = 0.1;
+const lineCps = (baseCps: number, index: number, accel: number) =>
+  baseCps * Math.max(LINE_CPS_MIN_FACTOR, 1 + index * accel);
+
 export function generateTimelineCSS(config: TimelineConfig): string {
   const cycleMs = parseMs(config.cycle);
   const cycleStr = typeof config.cycle === 'number' ? `${config.cycle}ms` : config.cycle;
@@ -97,15 +137,14 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       // same perceived speed. steps(N) where N = char count gives one tick
       // per character.
       if (Array.isArray(step.lines)) {
-        const baseCps = step.cps ?? 45;
-        const accel = step.accel ?? 0.8;
+        const baseCps = step.cps ?? TYPEWRITER_CPS;
+        const accel = step.accel ?? TYPEWRITER_LINE_ACCEL;
         const charCounts = step.lines;
         rules.push(`#${step.id} { clip-path: none; padding-right: 0; }`);
         let lineCursorMs = cursor;
         for (let i = 0; i < charCounts.length; i++) {
           const chars = Math.max(1, charCounts[i]);
-          const lineCps = baseCps * Math.pow(accel, i);
-          const lineDurMs = (chars / lineCps) * 1000;
+          const lineDurMs = (chars / lineCps(baseCps, i, accel)) * 1000;
           const lineId = `${step.id}-line-${i + 1}`;
           // Defer tw-${lineId} keyframe emission — a later `untype` step may
           // extend it with backspace stops. Emitted in the post-loop sweep.
@@ -123,7 +162,10 @@ export function generateTimelineCSS(config: TimelineConfig): string {
 }`);
             rules.push(`#caret-${lineId} { animation: caret-${lineId} ${cycleStr} linear infinite both; }`);
           }
+          // Beat of silence between lines (product parity). Not applied after
+          // the last line — the meta row / next step owns that gap.
           lineCursorMs += lineDurMs;
+          if (i < charCounts.length - 1) lineCursorMs += TYPEWRITER_LINE_GAP_MS;
         }
         cursor = lineCursorMs;
         if (step.meta) emitMeta(step.meta);
@@ -178,14 +220,49 @@ export function generateTimelineCSS(config: TimelineConfig): string {
     }
 
     else if (step.type === 'user') {
-      const dur = parseMs(step.duration || '0.3s');
+      const dur = step.duration ? parseMs(step.duration) : USER_POP_MS;
       const endPct = pct(cursor + dur);
+      // Opacity gets its own stop so it lands early and the transform still
+      // interpolates start → end across the full pop: CSS animates each
+      // property between the keyframes that declare it, so omitting transform
+      // here leaves the --ease-pop curve on the move untouched.
+      const cutPct = pct(cursor + Math.min(USER_OPACITY_CUT_MS, dur));
+      const opacityCut = cutPct === startPct ? '' : `\n  ${cutPct}% { opacity: 1; }`;
       rules.push(`@keyframes pop-${step.id} {
-  0%, ${startPct}% { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.85); }
+  0%, ${startPct}% { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.85); }${opacityCut}
   ${endPct}%, 100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }`);
       rules.push(`#${step.id} { animation: pop-${step.id} ${cycleStr} var(--ease-pop) infinite both; will-change: transform, opacity; }`);
       cursor += dur + parseMs(step.pause || '0s');
+    }
+
+    else if (step.type === 'thinking') {
+      const fadeIn = parseMs(step.fadeIn || THINKING_FADE_IN_MS);
+      const dwell = parseMs(step.duration || THINKING_DWELL_MS);
+      const inEnd = pct(cursor + fadeIn);
+      // The exit is a hard cut (the widget unmounts the indicator as the reply
+      // mounts), so the two stops sit 1ms apart and need the higher-precision
+      // pct to stay distinct. Plain ease-out matches the product's fade-in.
+      const cutStart = pctP(cursor + dwell);
+      const cutEnd = pctP(cursor + dwell + 1);
+
+      // `visibility` rides along with opacity so the indicator leaves the
+      // accessibility tree outside its visible window — opacity 0 alone keeps
+      // the stale "Thinking" reachable on top of the finished reply, since the
+      // element stays mounted for the whole loop. Safe to animate: visibility
+      // interpolates discretely, but an interval with either endpoint `visible`
+      // stays visible throughout, so the fade-in and the cut are unaffected.
+      rules.push(`@keyframes think-${step.id} {
+  0%, ${startPct}% { opacity: 0; visibility: hidden; }
+  ${inEnd}% { opacity: 1; visibility: visible; }
+  ${cutStart}% { opacity: 1; visibility: visible; }
+  ${cutEnd}%, 100% { opacity: 0; visibility: hidden; }
+}`);
+      rules.push(`#${step.id} { animation: think-${step.id} ${cycleStr} ease-out infinite both; will-change: opacity; }`);
+
+      // The reply starts typing at the cut, so the indicator is gone on the
+      // frame the first characters appear — never both at once.
+      cursor += dwell + parseMs(step.pause || '0s');
     }
 
     else if (step.type === 'divider') {

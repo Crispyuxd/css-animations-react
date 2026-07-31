@@ -92,17 +92,23 @@ function walk(cfg: TimelineConfig): Walker {
 
     if (step.type === 'bot') {
       if (Array.isArray((step as any).lines)) {
-        const baseCps = (step as any).cps ?? 45;
-        const accel = (step as any).accel ?? 0.8;
+        const baseCps = (step as any).cps ?? 90;
+        const accel = (step as any).accel ?? 0.45;
         const lines: number[] = (step as any).lines;
         let c = start;
         for (let i = 0; i < lines.length; i++) {
           const chars = Math.max(1, lines[i]);
-          const cps = baseCps * Math.pow(accel, i);
+          // Linear per-line speed-up, matching the engine's
+          // baseCps * (1 + i * accel). Not the old compounding accel^i.
+          // Same 0.1 floor as the engine, so a decelerating accel can't reach
+          // zero cps and produce an infinite duration.
+          const cps = baseCps * Math.max(0.1, 1 + i * accel);
           const dur = (chars / cps) * 1000;
           const lineId = `${(step as any).id}-line-${i + 1}`;
           lineEnd[lineId] = c + dur;
           c += dur;
+          // 120ms of silence between lines, but not after the last.
+          if (i < lines.length - 1) c += 120;
         }
         w.cursor = c;
         bump(w, c);
@@ -120,9 +126,17 @@ function walk(cfg: TimelineConfig): Walker {
     } else if (step.type === 'meta') {
       walkMeta(w, cfg, step as any);
     } else if (step.type === 'user') {
-      const dur = parseMs((step as any).duration ?? '0.3s');
+      const dur = parseMs((step as any).duration ?? '0.48s');
       const end = start + dur;
       w.events.push({ kind: 'user', id: (step as any).id, start, end });
+      bump(w, end);
+      w.cursor = end + parseMs((step as any).pause ?? '0s');
+    } else if (step.type === 'thinking') {
+      // The indicator fades in, dwells, then cuts out. The cursor advances by
+      // the dwell alone, so the reply below starts on the cut frame.
+      const dwell = parseMs((step as any).duration ?? '1.2s');
+      const end = start + dwell;
+      w.events.push({ kind: 'thinking', id: (step as any).id, start, end });
       bump(w, end);
       w.cursor = end + parseMs((step as any).pause ?? '0s');
     } else if (step.type === 'divider') {

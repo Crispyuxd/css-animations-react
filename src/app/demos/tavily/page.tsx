@@ -1,6 +1,6 @@
 'use client';
 
-import { ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack } from '@/components';
+import { ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack, ThinkingTrace } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
 
@@ -23,6 +23,7 @@ export default function TavilyDemo() {
 
           <BotMessage
             id="bot-2"
+            trace={<ThinkingTrace id="trace-1" />}
             lines={[
               'Here\'s what I found: Anthropic closed a $3.5B Series E at',
               'a $61.5B valuation, Mistral AI secured €600M in a Series',

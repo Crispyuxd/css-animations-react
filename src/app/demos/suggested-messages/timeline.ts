@@ -12,7 +12,7 @@ import type { TimelineConfig } from '@/lib/types';
 //   -76  user-1 anchor — bot-1+meta-0 scroll up together
 
 export const timeline: TimelineConfig = {
-  cycle: '24s',
+  cycle: '15s',
   introHold: '0.54s',
   outroFade: '0.9s',
   metaFadeIn: '0.36s',
@@ -20,7 +20,7 @@ export const timeline: TimelineConfig = {
   metaFadeOut: '0.36s',
   steps: [
     // AI bot greets — meta-0 fadeOut '0s' so it scrolls up with bot-1
-    { type: 'bot', id: 'bot-1', lines: [20], cps: 45, accel: 1, pause: '0.36s',
+    { type: 'bot', id: 'bot-1', lines: [20], pause: '0.36s',
       meta: { id: 'meta-0', fadeOut: '0s', parallel: true } },
 
     // Suggestion chips slide in just after the timestamp registers
@@ -37,18 +37,32 @@ export const timeline: TimelineConfig = {
 
     // Chips fade out, user message slides in — scroll runs concurrently
     // to anchor user-1 at the inset edge (padding-box y=20).
+    // The chips fade out on their own (noop show target) so user-1 can arrive
+    // on the shared user-bubble pop instead of the transition's generic
+    // translateY fade — every other demo pops its user bubble.
     { type: 'scroll', target: 'suggested-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'transition', hide: 'chips-1', show: 'user-1', duration: '0.5s', pause: '0.72s' },
+    { type: 'transition', hide: 'chips-1', show: 'noop-chips-out', duration: '0.5s', parallel: true },
+    { type: 'user', id: 'user-1', pause: '0.24s' },
+
+    // Knowledge-base lookup runs behind the pending indicator.
+    { type: 'thinking', id: 'trace-1' },
 
     // Bot replies — 12 lines at streaming pace. meta-1 stays visible.
-    { type: 'bot', id: 'bot-2', lines: [20, 50, 12, 46, 25, 49, 23, 48, 17, 58, 56, 28], cps: 45, accel: 1, pause: '0.36s' },
+    // Local accel override: the product's +45%/line is tuned for 2-4 line
+    // replies. Over 12 lines it compounds to ~535 cps by the last line, which
+    // reads as a flash, not a reveal. 0.1 keeps the accelerating feel and tops
+    // out at 189 cps. Any reply this long needs its own accel.
+    { type: 'bot', id: 'bot-2', lines: [20, 50, 12, 46, 25, 49, 23, 48, 17, 58, 56, 28], accel: 0.1, pause: '0.36s' },
     { type: 'meta', id: 'meta-1', fadeIn: '0.36s', hold: '0s', fadeOut: '0s', parallel: true },
 
     // Chips return so the loop reads as a fresh prompt opportunity. Pause
     // is sized so the fade-out lands inside the messagesStack outro window
     // (cycleMs − outroFade − 0.9s … cycleMs − 0.9s) and the duration matches
-    // outroFade so chips and messages fade in lockstep.
-    { type: 'widget', id: 'chips-2', duration: '0.4s', pause: '5.84s' },
+    // outroFade so chips and messages fade in lockstep. chips-2 lands at
+    // 11.73s, so 1.47s puts the hide at 13.2s = fadeStart for the 15s cycle,
+    // ending at 14.1s = fadeEnd. Re-derive with scripts/audit-cycle-timing.ts
+    // whenever the cycle or the reply pace moves.
+    { type: 'widget', id: 'chips-2', duration: '0.4s', pause: '1.47s' },
     { type: 'transition', hide: 'chips-2', show: 'noop-end', duration: '0.9s', slideOutY: '0px' },
   ],
 };
