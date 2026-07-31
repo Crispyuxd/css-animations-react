@@ -37,8 +37,12 @@ export const timeline: TimelineConfig = {
 
     // Chips fade out, user message slides in — scroll runs concurrently
     // to anchor user-1 at the inset edge (padding-box y=20).
+    // The chips fade out on their own (noop show target) so user-1 can arrive
+    // on the shared user-bubble pop instead of the transition's generic
+    // translateY fade — every other demo pops its user bubble.
     { type: 'scroll', target: 'suggested-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'transition', hide: 'chips-1', show: 'user-1', duration: '0.5s', pause: '0.72s' },
+    { type: 'transition', hide: 'chips-1', show: 'noop-chips-out', duration: '0.5s', parallel: true },
+    { type: 'user', id: 'user-1', pause: '0.72s' },
 
     // Bot replies — 12 lines at streaming pace. meta-1 stays visible.
     // Local accel override: the product's +45%/line is tuned for 2-4 line

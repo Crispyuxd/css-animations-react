@@ -10,6 +10,14 @@ const TYPEWRITER_CPS = 90;
 const TYPEWRITER_LINE_ACCEL = 0.45;
 const TYPEWRITER_LINE_GAP_MS = 120;
 
+// User-bubble pop, ported from the product widget (sunshine/chat-bubble.tsx
+// ChatBubble variant="user"): y +20 to 0, scale 0.85 to 1 on --ease-pop.
+// The bubble has a solid fill, so opacity is a near-instant cut rather than a
+// cross-fade — fading a filled bubble across the whole move makes the fill
+// wash out mid-flight and reads as two effects instead of one pop.
+const USER_POP_MS = 480;
+const USER_OPACITY_CUT_MS = 100;
+
 // Per-line speed. LINEAR in the line index (90 → 130.5 → 171 …), not
 // compounding — matches the product's `baseCps * (1 + index * accel)`.
 // A negative accel decelerates instead, which is how a human typist reads
@@ -196,10 +204,16 @@ export function generateTimelineCSS(config: TimelineConfig): string {
     }
 
     else if (step.type === 'user') {
-      const dur = parseMs(step.duration || '0.3s');
+      const dur = step.duration ? parseMs(step.duration) : USER_POP_MS;
       const endPct = pct(cursor + dur);
+      // Opacity gets its own stop so it lands early and the transform still
+      // interpolates start → end across the full pop: CSS animates each
+      // property between the keyframes that declare it, so omitting transform
+      // here leaves the --ease-pop curve on the move untouched.
+      const cutPct = pct(cursor + Math.min(USER_OPACITY_CUT_MS, dur));
+      const opacityCut = cutPct === startPct ? '' : `\n  ${cutPct}% { opacity: 1; }`;
       rules.push(`@keyframes pop-${step.id} {
-  0%, ${startPct}% { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.85); }
+  0%, ${startPct}% { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.85); }${opacityCut}
   ${endPct}%, 100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }`);
       rules.push(`#${step.id} { animation: pop-${step.id} ${cycleStr} var(--ease-pop) infinite both; will-change: transform, opacity; }`);

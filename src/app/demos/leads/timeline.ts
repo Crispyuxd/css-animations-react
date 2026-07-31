@@ -17,7 +17,7 @@ export const timeline: TimelineConfig = {
     // user-1 pops in, so the bubble feels anchored at the inset edge from
     // the first frame. y: -76 lands user-1 at padding-box y=20.
     { type: 'scroll', target: 'leads-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', duration: '0.54s', pause: '0.36s' },
+    { type: 'user', id: 'user-1', pause: '0.36s' },
 
     // Bot offers form — 2 lines split per Figma frame 2 (~88 chars at 334
     // width). No cps/accel: inherits the product AI voice (90 cps, +45%/line).

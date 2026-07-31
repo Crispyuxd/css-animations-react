@@ -28,7 +28,7 @@ export const timeline: TimelineConfig = {
     // frame. y: -76 lands user-1 at padding-box y=20 (the inset edge)
     // and lifts bot-1 + meta-0 above the visible viewport.
     { type: 'scroll', target: 'tavily-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', duration: '0.4s', pause: '0.72s' },
+    { type: 'user', id: 'user-1', pause: '0.72s' },
 
     // Bot-2 response — 4 lines at streaming pace. meta-1 stays visible until
     // stackFadeCycle starts; end-of-cycle breathing room comes from dwell.

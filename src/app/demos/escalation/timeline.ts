@@ -49,7 +49,7 @@ export const timeline: TimelineConfig = {
     // y: -76 lands user-1 at padding-box y=20 (the inset edge) and lifts
     // bot-1 + meta-0 above the visible viewport.
     { type: 'scroll', target: 'escalation-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', duration: '0.4s', pause: '0.72s' },
+    { type: 'user', id: 'user-1', pause: '0.72s' },
 
     // AI bot offers escalation — 2 lines at the same streaming pace as
     // bot-1 to keep the assistant voice consistent. meta-1 fadeOut '0s'.
@@ -75,7 +75,7 @@ export const timeline: TimelineConfig = {
     // because this scroll covers ~296px of travel; the longer duration
     // keeps the motion calm.
     { type: 'scroll', target: 'escalation-scroll', y: -372, duration: '0.75s', parallel: true },
-    { type: 'user', id: 'user-2', duration: '0.4s', pause: '0.72s' },
+    { type: 'user', id: 'user-2', pause: '0.72s' },
 
     // Mark's reply — same human-agent cadence as bot-3. meta-3 has no hold
     // (fadeOut:0 makes hold a no-op anyway); the end-of-cycle breathing room

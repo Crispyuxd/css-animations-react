@@ -23,7 +23,7 @@ export const timeline: TimelineConfig = {
     { type: 'scroll', target: 'forms-scroll', y: -76, duration: '0.5s', parallel: true },
 
     // User asks — pops in concurrently with the scroll above
-    { type: 'user', id: 'user-1', duration: '0.54s', pause: '0.36s' },
+    { type: 'user', id: 'user-1', pause: '0.36s' },
 
     // Bot offers form (typewriter types in below user-1, no scroll change)
     { type: 'bot', id: 'bot-2', lines: [29], pause: '0.36s' },

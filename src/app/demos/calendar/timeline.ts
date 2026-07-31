@@ -25,7 +25,7 @@ export const timeline: TimelineConfig = {
 
     // user-1 turn-anchor (parallel): lands user-1 at padding-box y=20
     { type: 'scroll', target: 'calendar-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', duration: '0.4s', pause: '0.72s' },
+    { type: 'user', id: 'user-1', pause: '0.72s' },
 
     // Bot offers calendar picker
     { type: 'bot', id: 'bot-2', lines: [37], pause: '0.3s' },

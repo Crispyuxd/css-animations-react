@@ -38,7 +38,7 @@ export const timeline: TimelineConfig = {
 
     // === Turn-anchor: scroll user-1 to inset edge as it pops in ===
     { type: 'scroll', target: 'stripe-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', duration: '0.54s', pause: '0.36s' },
+    { type: 'user', id: 'user-1', pause: '0.36s' },
 
     // === Bot offers the subscriptions card (1 line, ~44 chars) ===
     { type: 'bot', id: 'bot-2', lines: [44], pause: '0.36s' },

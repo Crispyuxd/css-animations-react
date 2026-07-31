@@ -28,7 +28,7 @@ export const timeline: TimelineConfig = {
     // frame. y: -76 lands user-1 at padding-box y=20 (the inset edge)
     // and lifts bot-1 + meta-0 above the visible viewport.
     { type: 'scroll', target: 'button-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', duration: '0.4s', pause: '0.72s' },
+    { type: 'user', id: 'user-1', pause: '0.72s' },
 
     // Bot replies — single line typewriter
     { type: 'bot', id: 'bot-2', lines: [34], pause: '0.3s' },
