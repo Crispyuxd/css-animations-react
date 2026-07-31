@@ -3,7 +3,7 @@
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
   FormCard, FormInputRow, FormTextareaRow, AttachButton, AttachmentItem, CaseCreatedCard,
-  CTAButton, DemoCursor, DemoState,
+  CTAButton, DemoCursor, DemoState, ThinkingTrace,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -36,6 +36,11 @@ export default function FormsDemo() {
             <BotMessage id="bot-1" lines={['Hey, how can I help?']} meta={<MetaRow id="meta-0" positioned={false} gap={8} />} />
 
             <UserMessage id="user-1" style={{ marginTop: 0, marginBottom: 0 }}>I want to submit a support case</UserMessage>
+
+            {/* Trace sits outside the bot-text wrapper so it survives the
+                bot-2 → bot-3 cross-fade. marginBottom trims the stack's 32
+                gap to the internal-to-turn 8. */}
+            <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -24 }} />
 
             {/* Bot text — bot-2 cross-fades to bot-3 in the same position so
                 the message "updates in place". Wrapper sizes to bot-2 (1 line)

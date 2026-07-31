@@ -3,7 +3,7 @@
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
   SubscriptionsCard, PlanPickerCard, BillSummaryCard, PaymentMethodsSheet, PaymentMethodsOverlay,
-  CaseCreatedCard, DemoCursor, DemoState,
+  CaseCreatedCard, DemoCursor, DemoState, ThinkingTrace,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -28,6 +28,11 @@ export default function StripeDemo() {
           <UserMessage id="user-1" style={{ marginTop: 0, marginBottom: 0 }}>
             I want to manage my subscription plan
           </UserMessage>
+
+          {/* Trace sits outside the bot-text wrapper so it survives the
+              bot-2 → bot-3 cross-fade. marginBottom trims the stack's 32
+              gap to the internal-to-turn 8. */}
+          <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -24 }} />
 
           {/* Bot text — bot-2 (mgmt prompt) cross-fades to bot-3 (success). Wrapper
               sized to bot-2 (1 line); bot-3 also 1 line so no overflow concerns. */}

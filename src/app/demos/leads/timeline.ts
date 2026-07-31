@@ -17,14 +17,20 @@ export const timeline: TimelineConfig = {
     // user-1 pops in, so the bubble feels anchored at the inset edge from
     // the first frame. y: -76 lands user-1 at padding-box y=20.
     { type: 'scroll', target: 'leads-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', pause: '0.36s' },
+    { type: 'user', id: 'user-1', pause: '0.24s' },
+
+    // Agent thinks before offering the form.
+    { type: 'thinking', id: 'trace-1' },
 
     // Bot offers form — 2 lines split per Figma frame 2 (~88 chars at 334
     // width). No cps/accel: inherits the product AI voice (90 cps, +45%/line).
     { type: 'bot', id: 'bot-2', lines: [58, 28], pause: '0.36s' },
 
     // Form-card slides in below bot-2. No camera pan — the form (244 tall)
-    // + meta-1 fits inside the content-box at the user-1 anchor (-76).
+    // + meta-1 still fits inside the content-box at the user-1 anchor (-76)
+    // after the trace row pushed the card top 212 → 240: meta-1 bottom lands
+    // at padding-box 20 + (240+244+12+16) − 76 = 456, well inside the 556
+    // content-box bottom.
     { type: 'widget', id: 'form-card', duration: '0.55s', slideY: '12px', pause: '0.18s' },
 
     // "Just now" timestamp fades in alongside the form-card arrival.

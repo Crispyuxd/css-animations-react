@@ -1,6 +1,6 @@
 'use client';
 
-import { ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, ConnectedDivider, MessagesStack } from '@/components';
+import { ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, ConnectedDivider, MessagesStack, ThinkingTrace } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
 
@@ -27,6 +27,11 @@ export default function EscalationDemo() {
           <UserMessage id="user-1">
             I&apos;m having trouble with my recent order
           </UserMessage>
+
+          {/* Only the AI's reply gets a trace. Mark Kent is a person, so
+              bot-3 and bot-4 have no thinking beat. marginBottom trims the
+              stack's 20 gap to the internal-to-turn 8. */}
+          <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -12 }} />
 
           <BotMessage
             id="bot-2"

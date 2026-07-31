@@ -1,6 +1,6 @@
 'use client';
 
-import { ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack } from '@/components';
+import { ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack, ThinkingTrace } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
 
@@ -20,6 +20,9 @@ export default function TavilyDemo() {
           <UserMessage id="user-1" wrap>
             What are the top AI funding rounds this week?
           </UserMessage>
+
+          {/* marginBottom trims the stack's 20 gap to the internal-to-turn 8 */}
+          <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -12 }} />
 
           <BotMessage
             id="bot-2"

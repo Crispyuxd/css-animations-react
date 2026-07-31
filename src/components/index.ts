@@ -5,6 +5,7 @@ export { MessagesStack } from './MessagesStack/MessagesStack';
 export { BotMessage } from './BotMessage/BotMessage';
 export { UserMessage } from './UserMessage/UserMessage';
 export { MetaRow } from './MetaRow/MetaRow';
+export { ThinkingTrace } from './ThinkingTrace/ThinkingTrace';
 export { ConnectedDivider } from './ConnectedDivider/ConnectedDivider';
 export { CalendarWidget } from './CalendarWidget/CalendarWidget';
 export { CallBooked } from './CallBooked/CallBooked';

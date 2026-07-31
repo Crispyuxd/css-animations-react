@@ -96,6 +96,28 @@ this is the trap that kept biting me. The `.positioned` class supplies
 no element below the meta), e.g. a single-message intro. Don't enable
 it for anything else.
 
+## ThinkingTrace — it changes every offset below it
+
+`ThinkingTrace` is a **fixed 20px in-flow row** that renders above the reply it
+belongs to. It is in the layout from the first frame (only its opacity is
+animated), so nothing shifts when it fades in or settles — but it does add
+**28px** (the 20px row + the 8px internal-to-turn gap) to every offset below
+it. Any `scroll` anchor whose target sits after a trace must move by 28.
+
+It carries no margins of its own. Trim the stack gap down to the
+internal-to-turn 8 at the call site, the same way widget wrappers do:
+
+```tsx
+// stack gap 20:
+<ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -12 }} />
+// stack gap 32:
+<ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -24 }} />
+```
+
+Place it **outside** any cross-fading bot-text wrapper (calendar, forms, leads,
+shopify, stripe). It belongs to the whole assistant turn, so it has to survive
+the bot-2 → bot-3 swap rather than fade out with it.
+
 ## Computing layout offsets
 
 For a typical bot-1 → user-1 → bot-2 → divider → bot-3 → user-2 → bot-4
@@ -125,10 +147,10 @@ Some demos have a widget (form card, picker, calendar) taller than the
 bottom of the lowest visible element at the content-box bottom edge**.
 
 For `forms`:
-- form-card top in `#forms-scroll` = 193, base height = 438, expanded height = 510.
+- form-card top in `#forms-scroll` = 221, base height = 438, expanded height = 510.
 - meta-1 sits 12px + 16px = 28px below form-card.
-- **Pre-attach scroll** (form base 438) — anchor meta-1 bottom: `scrollY = 536 − (193 + 438 + 12 + 16) = -123`.
-- **Deep scroll** (form expanded 510, after attach click) — anchor meta-1 bottom: `scrollY = 536 − (193 + 510 + 12 + 16) = -195`.
+- **Pre-attach scroll** (form base 438) — anchor meta-1 bottom: `scrollY = 536 − (221 + 438 + 12 + 16) = -151`.
+- **Deep scroll** (form expanded 510, after attach click) — anchor meta-1 bottom: `scrollY = 536 − (221 + 510 + 12 + 16) = -223`.
 
 The `−72` scroll delta is intentional — it exactly matches the form's
 72px height growth (two attachments × 36px each). Meta-1 stays at the

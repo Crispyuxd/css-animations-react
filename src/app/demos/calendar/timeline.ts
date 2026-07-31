@@ -4,8 +4,9 @@ import type { TimelineConfig } from '@/lib/types';
 // UserMessage CSS margins 12/12 + MetaRow in-flow):
 //   bot-1 botBlock      0..44   (text 0..20, meta-0 inline at 28..44)
 //   user-1 row         76..120  (margin 12, bubble 44 — single line)
-//   bot-text wrapper   152..172 (1 line = 20px)
-//   card wrapper       192..~460 (calendar ~240 + meta 28)
+//   trace-1            152..172 (fixed 20 row, marginBottom -12 → 8 to bot text)
+//   bot-text wrapper   180..200 (1 line = 20px)
+//   card wrapper       220..~488 (calendar ~240 + meta 28)
 //
 // User-message anchor at padding-box y = 20 (inset edge):
 //   -76   user-1 anchor
@@ -25,7 +26,12 @@ export const timeline: TimelineConfig = {
 
     // user-1 turn-anchor (parallel): lands user-1 at padding-box y=20
     { type: 'scroll', target: 'calendar-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', pause: '0.72s' },
+    { type: 'user', id: 'user-1', pause: '0.24s' },
+
+    // Agent thinks before answering. The reply starts typing the moment the
+    // header cuts to "Completed 1 action", so the mark's collapse overlaps
+    // bot-2's first characters.
+    { type: 'thinking', id: 'trace-1' },
 
     // Bot offers calendar picker
     { type: 'bot', id: 'bot-2', lines: [37], pause: '0.3s' },

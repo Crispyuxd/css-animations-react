@@ -1,0 +1,83 @@
+/* Fixed height: the row is in the layout from the first frame so the reply
+   below it never shifts when the trace fades in or settles. */
+.trace {
+  position: relative;
+  width: 100%;
+  height: 20px;
+}
+
+.state {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  height: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  /* -0.02em at 14px, matching the product header's tracking. */
+  letter-spacing: -0.28px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  opacity: 0;
+}
+
+/* Gap lives on the box as a margin, not as flex `gap`, because the settle
+   animates it to 0 alongside the width collapse. */
+.markBox {
+  display: inline-flex;
+  flex: none;
+  width: 16px;
+  margin-right: 6px;
+  overflow: hidden;
+}
+
+.mark {
+  display: inline-flex;
+  flex: none;
+  width: 16px;
+  height: 18px;
+  animation: thinkingSpin 2.4s linear infinite;
+}
+
+/* Near-white peak at the sweep centre, per sunshine/widget.css text-shimmer +
+   the product's light-surface gradient. */
+.shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--text-muted) 0%,
+    var(--text-muted) 42%,
+    color-mix(in srgb, var(--text-muted) 30%, white) 50%,
+    var(--text-muted) 58%,
+    var(--text-muted) 100%
+  );
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: textShimmer 4s ease-in-out infinite;
+}
+
+@keyframes thinkingSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes textShimmer {
+  0% { background-position: 100% center; }
+  55% { background-position: 0% center; }
+  100% { background-position: 0% center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark,
+  .shimmer {
+    animation: none;
+  }
+  .shimmer {
+    color: var(--text-muted);
+    background-image: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+  }
+}

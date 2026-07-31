@@ -2,7 +2,7 @@
 
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
-  CalendarWidget, CallBooked, DemoCursor, DemoState,
+  CalendarWidget, CallBooked, DemoCursor, DemoState, ThinkingTrace,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -35,6 +35,11 @@ export default function CalendarDemo() {
           <UserMessage id="user-1">
             I&apos;d like to book a demo
           </UserMessage>
+
+          {/* Trace sits outside the bot-text wrapper so it survives the
+              bot-2 → bot-2-booked cross-fade. marginBottom trims the stack's
+              20 gap to the internal-to-turn 8. */}
+          <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -12 }} />
 
           {/* Bot text wrapper — bot-2 cross-fades to bot-2-booked */}
           <div style={{ position: 'relative', width: '100%' }}>

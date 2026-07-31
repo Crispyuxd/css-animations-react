@@ -3,6 +3,7 @@
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
   CategoriesWidget, PickerWidget, ProductSheet, SheetOverlay, CartWidget, OrderSuccessWidget, DemoCursor, DemoState,
+  ThinkingTrace,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -24,6 +25,11 @@ export default function ShopifyDemo() {
           <UserMessage id="user-1">
             Show me categories on sale
           </UserMessage>
+
+          {/* Trace sits outside the bot-text wrapper so it survives the
+              bot-2 → bot-3 untype/swap. marginBottom trims the stack's 20 gap
+              to the internal-to-turn 8. */}
+          <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -12 }} />
 
           <div style={{ position: 'relative' }}>
             {/* Bot text — bot-2 untypes/backspaces and bot-3 types in at the

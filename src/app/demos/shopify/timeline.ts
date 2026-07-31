@@ -5,7 +5,8 @@ import type { TimelineConfig } from '@/lib/types';
 // height 16 → adds 24 to its bot's height):
 //   bot-1 botBlock      0..44   (text 0..20, meta-0 inline at 28..44)
 //   user-1 row         76..120  (margin 12, bubble 44 — single line)
-//   bot-2 wrapper     152..~    (text 0..20 + marginTop:12 widget area below)
+//   trace-1           152..172  (fixed 20 row, marginBottom -12 → 8 to bot-2)
+//   bot-2 wrapper     180..~    (text 0..20 + marginTop:12 widget area below)
 //
 // .messages has 20px padding + overflow:hidden.
 // User-message anchor at padding-box y = 20 (inset edge):
@@ -28,7 +29,10 @@ export const timeline: TimelineConfig = {
     // frame. y: -76 lands user-1 at padding-box y=20 (the inset edge)
     // and lifts bot-1 + meta-0 above the visible viewport.
     { type: 'scroll', target: 'shopify-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', pause: '0.72s' },
+    { type: 'user', id: 'user-1', pause: '0.24s' },
+
+    // Catalog lookup runs behind the thinking header.
+    { type: 'thinking', id: 'trace-1' },
 
     // Bot offers categories list — `lines:` mode so the engine tracks the
     // line span (#bot-2-line-1) and a later `untype` step can backspace it

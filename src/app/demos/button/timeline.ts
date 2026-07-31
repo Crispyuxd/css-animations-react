@@ -5,7 +5,8 @@ import type { TimelineConfig } from '@/lib/types';
 // height 16 → adds 24 to its bot's height):
 //   bot-1 botBlock      0..44   (text 0..20, meta-0 inline at 28..44)
 //   user-1 row         76..120  (margin 12, bubble 44 — single line)
-//   bot-2 botBlock    152..248  (text 152..172, slot 184..224, meta-1 232..248)
+//   trace-1           152..172  (fixed 20 row, marginBottom -12 → 8 to bot-2)
+//   bot-2 botBlock    180..276  (text 180..200, slot 212..252, meta-1 260..276)
 //
 // .messages has 20px padding + overflow:hidden.
 // User-message anchor at padding-box y = 20 (inset edge):
@@ -28,7 +29,10 @@ export const timeline: TimelineConfig = {
     // frame. y: -76 lands user-1 at padding-box y=20 (the inset edge)
     // and lifts bot-1 + meta-0 above the visible viewport.
     { type: 'scroll', target: 'button-scroll', y: -76, duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', pause: '0.72s' },
+    { type: 'user', id: 'user-1', pause: '0.24s' },
+
+    // Agent thinks, then settles to "Completed 1 action" as the reply types.
+    { type: 'thinking', id: 'trace-1' },
 
     // Bot replies — single line typewriter
     { type: 'bot', id: 'bot-2', lines: [34], pause: '0.3s' },

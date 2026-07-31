@@ -9,6 +9,26 @@ export function SparkleAvatar() {
   );
 }
 
+// Stacked-cube thinking mark, copied verbatim from the product widget's
+// message trace (sunshine/message-trace.tsx ThinkingMark). Carries its own
+// brand fills and white strokes, so it ignores currentColor. Spun by
+// ThinkingTrace, not here.
+export function ThinkingMark() {
+  return (
+    <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
+      <path d="M4.51562 2.57398L8.0111 0.576172L11.5066 2.57398V6.5696L8.0111 8.56742L4.51562 6.5696V2.57398Z" fill="#FE6737"/>
+      <path d="M8.0111 8.56742L11.5066 6.5696V2.57398L8.0111 0.576172L4.51562 2.57398V6.5696L8.0111 8.56742ZM4.51562 2.57398L8.0111 4.57179M11.5066 2.57398L8.0111 4.57179M8.0111 4.57179V8.56742" stroke="white"/>
+      <path d="M1 8.57398L4.49548 6.57617L7.99095 8.57398V12.5696L4.49548 14.5674L1 12.5696V8.57398Z" fill="#FE6737"/>
+      <path d="M4.49548 14.5674L7.99095 12.5696V8.57398L4.49548 6.57617L1 8.57398V12.5696L4.49548 14.5674ZM1 8.57398L4.49548 10.5718M7.99095 8.57398L4.49548 10.5718M4.49548 10.5718V14.5674" stroke="white"/>
+      <path d="M7.99219 8.57398L11.4877 6.57617L14.9831 8.57398V12.5696L11.4877 14.5674L7.99219 12.5696V8.57398Z" fill="#FE6737"/>
+      <path d="M11.4877 14.5674L14.9831 12.5696V8.57398L11.4877 6.57617L7.99219 8.57398V12.5696L11.4877 14.5674ZM7.99219 8.57398L11.4877 10.5718M14.9831 8.57398L11.4877 10.5718M11.4877 10.5718V14.5674" stroke="white"/>
+      <path d="M8.0111 12.5801L4.51562 14.5779L8.0111 16.5757L11.5066 14.5779L8.0111 12.5801Z" fill="#FE6737" stroke="white"/>
+      <path d="M11.4844 2.57812L14.9799 4.57594V8.57156L11.4844 6.57375V2.57812Z" fill="#FE6737" stroke="white"/>
+      <path d="M4.49609 2.57812L1.00062 4.57594V8.57156L4.49609 6.57375V2.57812Z" fill="#FE6737" stroke="white"/>
+    </svg>
+  );
+}
+
 // Thumbs, copied from the product widget's meta row
 // (sunshine/chat-bubble.tsx). Both are authored on a 24-grid master with a
 // 1.125 stroke, which is 0.75 seated on this 16 grid. Do not re-derive: the

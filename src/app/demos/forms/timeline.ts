@@ -23,18 +23,22 @@ export const timeline: TimelineConfig = {
     { type: 'scroll', target: 'forms-scroll', y: -76, duration: '0.5s', parallel: true },
 
     // User asks — pops in concurrently with the scroll above
-    { type: 'user', id: 'user-1', pause: '0.36s' },
+    { type: 'user', id: 'user-1', pause: '0.24s' },
+
+    // Support-case lookup runs behind the thinking header.
+    { type: 'thinking', id: 'trace-1' },
 
     // Bot offers form (typewriter types in below user-1, no scroll change)
     { type: 'bot', id: 'bot-2', lines: [29], pause: '0.36s' },
 
     // Camera pans down at form pop-up to anchor meta-1 ("Just now" + thumbs)
     // at the content-box bottom edge with the base-height form (438). With
-    // meta-1's offsetTop in #forms-scroll = 193 + 438 + 12 = 643 (top) and
-    // height 16, scrollY = 536 − 659 = −123. user-1 fully scrolls off the
+    // meta-1's offsetTop in #forms-scroll = 221 + 438 + 12 = 671 (top) and
+    // height 16, scrollY = 536 − 687 = −151. (The form-card top moved 193 → 221
+    // when the trace row added 28 above bot-2.) user-1 fully scrolls off the
     // top (it's no longer the focus during form interaction); the form-card
     // and meta row stay fully visible above the chat input.
-    { type: 'scroll', target: 'forms-scroll', y: -123, duration: '0.55s', parallel: true },
+    { type: 'scroll', target: 'forms-scroll', y: -151, duration: '0.55s', parallel: true },
 
     // Form card slides in below bot-2. user-1 stays at the top edge with the
     // same 12px header gap as the initial turn-anchor — the camera pans down
@@ -91,7 +95,8 @@ export const timeline: TimelineConfig = {
     // instead of getting clipped. The form-card's top scrolls out of view
     // (no longer the focus); the user's eye tracks the bottom half
     // (Submit, attachments, meta) which stays anchored.
-    { type: 'scroll', target: 'forms-scroll', y: -195, duration: '0.5s', pause: '0s' },
+    // Expanded form 510: scrollY = 536 − (221 + 510 + 12 + 16) = −223.
+    { type: 'scroll', target: 'forms-scroll', y: -223, duration: '0.5s', pause: '0s' },
 
     // Files appear into the now-roomier view. `collapse` zeroes each item's
     // layout footprint pre-show: height 0 + margin-top -16 cancels its

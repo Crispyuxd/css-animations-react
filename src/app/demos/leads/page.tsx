@@ -2,7 +2,7 @@
 
 import {
   ChatCard, ChatHeader, ChatInput, BotMessage, UserMessage, MetaRow, MessagesStack,
-  FormCard, FormInputRow, CaseCreatedCard, CTAButton, DemoCursor, DemoState,
+  FormCard, FormInputRow, CaseCreatedCard, CTAButton, DemoCursor, DemoState, ThinkingTrace,
 } from '@/components';
 import { useTimeline } from '@/hooks/useTimeline';
 import { timeline } from './timeline';
@@ -27,6 +27,11 @@ export default function LeadsDemo() {
           <UserMessage id="user-1" style={{ marginTop: 0, marginBottom: 0 }}>
             I want to schedule a demo with your team
           </UserMessage>
+
+          {/* Trace sits outside the bot-text wrapper so it survives the
+              bot-2 → bot-3 cross-fade. marginBottom trims the stack's 32
+              gap to the internal-to-turn 8. */}
+          <ThinkingTrace id="trace-1" count={1} style={{ marginBottom: -24 }} />
 
           {/* Bot text — bot-2 cross-fades to bot-3 in the same wrapper.
               Wrapper sizes to bot-2 (2 lines); bot-3 has 3 lines so its

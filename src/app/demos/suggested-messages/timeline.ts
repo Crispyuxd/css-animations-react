@@ -5,7 +5,8 @@ import type { TimelineConfig } from '@/lib/types';
 // height 16 → adds 24 to its bot's height):
 //   bot-1 botBlock      0..44   (text 0..20, meta-0 inline at 28..44)
 //   user-1 row         76..120  (margin 12, bubble 44 — single line)
-//   bot-2 botBlock    152..416  (text 152..392, meta-1 inline 400..416)
+//   trace-1           152..172  (fixed 20 row, marginBottom -12 → 8 to bot-2)
+//   bot-2 botBlock    180..444  (text 180..420, meta-1 inline 428..444)
 //
 // .messages has 20px padding + overflow:hidden.
 // User-message anchor at padding-box y = 20 (inset edge):
@@ -42,7 +43,10 @@ export const timeline: TimelineConfig = {
     // translateY fade — every other demo pops its user bubble.
     { type: 'scroll', target: 'suggested-scroll', y: -76, duration: '0.5s', parallel: true },
     { type: 'transition', hide: 'chips-1', show: 'noop-chips-out', duration: '0.5s', parallel: true },
-    { type: 'user', id: 'user-1', pause: '0.72s' },
+    { type: 'user', id: 'user-1', pause: '0.24s' },
+
+    // Knowledge-base lookup runs behind the thinking header.
+    { type: 'thinking', id: 'trace-1' },
 
     // Bot replies — 12 lines at streaming pace. meta-1 stays visible.
     // Local accel override: the product's +45%/line is tuned for 2-4 line
