@@ -17,7 +17,7 @@ interface CallPanelProps {
  *
  * This component is pure markup and rest state. All choreography lives in the
  * `voicecall` timeline step, which drives the two rows and the two captions by
- * id, and in the ambient `voice-bar` oscillation in globals.css.
+ * id, including the resting oscillation of the waveform.
  *
  * Both rows stay mounted and overlap in the orb: the engine cuts one out on
  * the exact frame it cuts the other in, and at that frame both are seven

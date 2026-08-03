@@ -78,62 +78,17 @@ body {
 /* ── Voice-call waveform ──────────────────────────────────────────────────
    Ported from the product widget's voice mode via chatbase-website's
    src/components/ui/voice-waveform.tsx. Bars are sized as a % of the parent
-   orb; --bar-ratio is per-bar (set inline by CallPanel) and --voice-amp gates
-   the oscillation amplitude.
+   orb; --bar-ratio is per-bar (set inline by CallPanel).
 
-   Global on purpose: a CSS Module would hash `voice-bar` out from under the
-   engine, which names it in the generated animation declaration.
-
-   --voice-amp is used as a 0/1 switch, not a ramp: 0 while a bar is growing
-   out of its connect dot (which pins the clip at a constant inset, so the grow
-   reads as a clean grow) and 1 for the idle oscillation. The source appears to
-   ease it in over 660ms, but that `transition: --voice-amp` is inert there
-   because the property is not registered, so what ships snaps to full
-   amplitude on morph exit. This matches the shipped behaviour.
-
-   It is registered anyway, and must stay registered: the switch has to be a
-   well-defined <number>, and if --voice-amp were ever unset the 50% calc()
-   below would be invalid at computed-value time, which drops that whole
-   keyframe step and freezes the bars mid-wave. */
-@property --voice-amp {
-  syntax: '<number>';
-  inherits: true;
-  initial-value: 1;
-}
-
-@keyframes voice-bar {
-  0%,
-  100% {
-    clip-path: inset(22.5% 0 22.5% 0 round 9999px);
-  }
-  12.5%,
-  87.5% {
-    clip-path: inset(
-      calc(22.5% * (1 - var(--voice-amp) * 0.146)) 0
-        calc(22.5% * (1 - var(--voice-amp) * 0.146)) 0 round 9999px
-    );
-  }
-  25%,
-  75% {
-    clip-path: inset(
-      calc(22.5% * (1 - var(--voice-amp) * 0.5)) 0
-        calc(22.5% * (1 - var(--voice-amp) * 0.5)) 0 round 9999px
-    );
-  }
-  37.5%,
-  62.5% {
-    clip-path: inset(
-      calc(22.5% * (1 - var(--voice-amp) * 0.854)) 0
-        calc(22.5% * (1 - var(--voice-amp) * 0.854)) 0 round 9999px
-    );
-  }
-  50% {
-    clip-path: inset(
-      calc(22.5% * (1 - var(--voice-amp))) 0
-        calc(22.5% * (1 - var(--voice-amp))) 0 round 9999px
-    );
-  }
-}
+   The oscillation itself is NOT here. The source runs it as a standalone
+   `voice-bar` loop whose amplitude is gated by an animated --voice-amp
+   custom property, and that structure breaks in this engine: a second
+   animation on the same bar would fight the grow for clip-path, and a
+   calc() reading a custom property that another animation on the same
+   element animates gets substituted once and never re-resolved, which froze
+   five of the seven bars. The engine now emits the same triangle as literal
+   insets inside each bar's cycle-locked keyframe, see the `voicecall` step
+   in src/lib/timeline-engine.ts. */
 
 @media (prefers-reduced-motion: reduce) {
   * {

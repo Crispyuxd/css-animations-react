@@ -45,8 +45,8 @@ export type TimelineStep =
   //   connecting — one black dot sweeps the 7-dot row (200ms per dot)
   //   settling   — every dot goes black, 40ms stagger
   //   morphing   — the dots grow into the 7-bar waveform, 40ms stagger
-  // The resting oscillation that follows is an ambient loop (`voice-bar` in
-  // globals.css), so it isn't a phase and doesn't advance the cursor.
+  // The resting oscillation that follows runs to the end of the cycle on a
+  // 1.6s loop, so it isn't a phase and doesn't advance the cursor.
   // Defaults are the source's exact values; only override to retime a demo.
   | { type: 'voicecall'; id: string; connecting?: TimeValue; settling?: TimeValue; morphing?: TimeValue; pause?: TimeValue }
   | { type: 'widget'; id: string; duration?: TimeValue; pause?: TimeValue; slideY?: string; collapse?: { height: string; marginTop?: string }; shimmer?: boolean; ease?: string; parallel?: boolean }

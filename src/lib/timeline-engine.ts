@@ -645,6 +645,41 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       const MORPH_DUR = 420;
       const CALL_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
 
+      // The resting oscillation, identical to the product's: clip-path inset
+      // sweeping 22.5% -> 0 -> 22.5% over a 1.6s linear loop, one stop every
+      // 200ms (the source's 12.5% keyframe offsets), with each bar 230ms ahead
+      // of the one before it (the source's `animation-delay: -i * 0.23s`) so
+      // the wave travels along the row instead of pulsing in unison.
+      //
+      // Emitted as literal insets inside each bar's own cycle-locked keyframe,
+      // NOT as a second `voice-bar` animation whose amplitude is gated by an
+      // animated --voice-amp custom property. That is how the source does it,
+      // and it cannot work here: when a keyframe's calc() reads a custom
+      // property that another animation ON THE SAME ELEMENT is animating,
+      // Chrome substitutes it once and never re-resolves it. The substitution
+      // landed while --voice-amp was still 0 (its pre-morph value), which
+      // collapses every stop of the wave to inset(22.5%) — a constant. Five of
+      // the seven bars sat frozen at 55% height for the whole cycle, and only
+      // the two that happened to catch an unrelated style invalidation moved.
+      const WAVE_PERIOD = 1600;
+      const WAVE_STEP = WAVE_PERIOD / 8;
+      const WAVE_STAGGER = 230;
+      // 22.5% x (1 - amp * k) at amp 1, for the source's k of 0, 0.146, 0.5,
+      // 0.854, 1 — one full triangle, so index 0 is both 0% and 100%.
+      const WAVE_INSETS = [22.5, 19.215, 11.25, 3.285, 0, 3.285, 11.25, 19.215];
+      const clipAt = (v: number) => `inset(${v}% 0 ${v}% 0 round 9999px)`;
+      const WAVE_REST = clipAt(WAVE_INSETS[0]);
+      // Interpolated, not snapped to the grid: a bar's wave starts 1ms after
+      // its own grow, which is mid-segment, and it has to pick the triangle up
+      // exactly where it already is or the shape kinks on the first stop.
+      const waveClip = (t: number) => {
+        const k = ((t % WAVE_PERIOD) + WAVE_PERIOD) % WAVE_PERIOD / WAVE_STEP;
+        const i0 = Math.floor(k);
+        const a = WAVE_INSETS[i0];
+        const b = WAVE_INSETS[(i0 + 1) % WAVE_INSETS.length];
+        return clipAt(Number((a + (b - a) * (k - i0)).toFixed(3)));
+      };
+
       const settleStart = cursor + connecting;
       const morphStart = settleStart + settling;
 
@@ -685,35 +720,50 @@ export function generateTimelineCSS(config: TimelineConfig): string {
 }`);
         rules.push(`#${step.id}-dots [data-dot]:nth-child(${i + 1}) { animation: call-dot-${step.id}-${i} ${cycleStr} linear infinite both; will-change: background-color; }`);
 
-        // Bar i: holds at dot size, grows on its stagger, then hands off to the
-        // ambient `voice-bar` oscillation at FULL amplitude.
-        //
-        // --voice-amp steps 0 -> 1, it does not ramp. The source carries a
-        // `transition: --voice-amp` that reads like a 660ms ease-in, but that
-        // transition is inert (--voice-amp is not registered there), so what
-        // actually ships snaps to full amplitude the moment the morph ends.
-        // Copy the shipped behaviour: a ramp leaves the wave nearly flat for
-        // over a second, which on a looping demo is most of its time on screen.
+        // Bar i: holds at dot size, grows on its stagger, then oscillates for
+        // the rest of the cycle. One keyframe owns all three, because the wave
+        // and the grow both write clip-path/height and a second animation
+        // would simply override the first.
         //
         // SUBSTITUTION: the source grows an UNCLIPPED bar 4% -> ratio*22%,
         // because during `morphing` voice-bar-grow occupies its single
-        // animation slot and no clip-path applies. Here voice-bar rides along
-        // in the same declaration and never stops, so the bar is clipped
-        // throughout and the grow is expressed in box height instead:
-        // amp 0 pins the clip at a constant inset(22.5%), i.e. 55% of the box,
-        // so growing the box to ratio*40% shows ratio*22% — the source's exact
-        // end state — and starting at 7.2727% (8px / 0.55 of the 200px orb)
-        // shows the 8px circle the dot handed over. Same pixels, one animation.
+        // animation slot and no clip-path applies. Here the grow is clipped by
+        // the same keyframe that carries the wave, so it is expressed in box
+        // height instead: a constant inset(22.5%) shows 55% of the box, so
+        // growing the box to ratio*40% shows ratio*22% — the source's exact end
+        // state — and starting at 7.2727% (8px / 0.55 of the 200px orb) shows
+        // the 8px circle the dot handed over. Same pixels, one animation.
+        //
+        // The wave then hard-cuts in 1ms after the grow rather than ramping.
+        // That is the shipped behaviour: the source carries a
+        // `transition: --voice-amp` that reads like a 660ms ease-in, but the
+        // transition is inert there (--voice-amp is not registered), so
+        // amplitude snaps. A ramp would leave the wave nearly flat for over a
+        // second, which on a looping demo is most of its time on screen.
         const morphIn = morphStart + i * MORPH_STAGGER;
-        rules.push(`@keyframes call-bar-${step.id}-${i} {
-  0%, ${pctP(morphIn)}% { height: 7.2727%; --voice-amp: 0; animation-timing-function: ${CALL_EASE}; }
-  ${pctP(morphIn + MORPH_DUR)}% { height: calc(var(--bar-ratio) * 40%); --voice-amp: 0; }
-  ${pctP(morphIn + MORPH_DUR + 1)}%, 100% { height: calc(var(--bar-ratio) * 40%); --voice-amp: 1; }
-}`);
-        // Both animations must live in ONE declaration: this selector outranks
-        // CallPanel.module.css, so a separate rule there would be overridden
-        // rather than merged, and the waveform would never oscillate.
-        rules.push(`#${step.id}-bars [data-bar]:nth-child(${i + 1}) { animation: call-bar-${step.id}-${i} ${cycleStr} linear infinite both, voice-bar 1.6s linear ${(-i * 0.23).toFixed(2)}s infinite; will-change: height, clip-path; }`);
+        const morphEnd = morphIn + MORPH_DUR;
+        const full = 'calc(var(--bar-ratio) * 40%)';
+        // Wall-clock -> this bar's position in the wave. Ahead, not behind:
+        // the source's delay is negative.
+        const local = (t: number) => t + i * WAVE_STAGGER;
+        const bar = [
+          `0%, ${pctP(morphIn)}% { height: 7.2727%; clip-path: ${WAVE_REST}; animation-timing-function: ${CALL_EASE}; }`,
+          `${pctP(morphEnd)}% { height: ${full}; clip-path: ${WAVE_REST}; }`,
+          `${pctP(morphEnd + 1)}% { height: ${full}; clip-path: ${waveClip(local(morphEnd + 1))}; }`,
+        ];
+        // Then one stop per 200ms on this bar's own grid — strictly after the
+        // cut-in, so no two stops can round to the same pctP and flatten the
+        // segment between them.
+        const firstGrid =
+          (Math.floor(local(morphEnd + 1) / WAVE_STEP) + 1) * WAVE_STEP - i * WAVE_STAGGER;
+        for (let t = firstGrid; t < cycleMs; t += WAVE_STEP) {
+          bar.push(`${pctP(t)}% { clip-path: ${waveClip(local(t))}; }`);
+        }
+        // The cycle wraps back to WAVE_REST, which is a jump — but the panel is
+        // already faded out by then, so it is never seen.
+        bar.push(`100% { clip-path: ${waveClip(local(cycleMs))}; }`);
+        rules.push(`@keyframes call-bar-${step.id}-${i} {\n  ${bar.join('\n  ')}\n}`);
+        rules.push(`#${step.id}-bars [data-bar]:nth-child(${i + 1}) { animation: call-bar-${step.id}-${i} ${cycleStr} linear infinite both; will-change: height, clip-path; }`);
       }
 
       // Caption: "Calling customer support..." fades out across `settling` as

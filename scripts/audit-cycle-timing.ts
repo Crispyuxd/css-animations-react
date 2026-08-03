@@ -219,7 +219,7 @@ function walk(cfg: TimelineConfig): Walker {
       const morphing = parseMs((step as any).morphing ?? '0.46s');
       // The cursor advances by the three phase lengths, but the last bar keeps
       // moving a little past them: it starts its grow 6 * 40ms into the morph
-      // phase, grows for 420ms, then --voice-amp steps to full 1ms later. The
+      // phase, grows for 420ms, then the wave cuts in at full 1ms later. The
       // idle oscillation from there on is ambient and never ends, so it is not
       // counted as a visual end. Mirror of the engine's voicecall block.
       const lastBar = 6 * 40 + 420 + 1;

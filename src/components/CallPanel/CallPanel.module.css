@@ -69,9 +69,12 @@
   border-radius: 9999px;
   background: var(--call-dot-live);
   /* Rest height. 40% of the 200px orb x --bar-ratio reproduces Figma's
-     [23, 40, 80, 59, 23, 59, 23] exactly; `voice-bar` then clips it to 55%
-     of that and oscillates back out to full. */
+     [23, 40, 80, 59, 23, 59, 23] exactly; the clip below takes it to 55% of
+     that, and the `voicecall` step oscillates the clip back out to full. */
   height: calc(var(--bar-ratio) * 40%);
+  /* Rest state = the wave's trough, so a bar with no timeline mounted looks
+     like the frame the morph hands over rather than a full-height bar. */
+  clip-path: inset(22.5% 0 22.5% 0 round 9999px);
 }
 
 /* Fixed slot: the captions are absolutely stacked so cross-fading them can't
