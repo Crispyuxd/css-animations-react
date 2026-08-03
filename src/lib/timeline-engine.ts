@@ -1,5 +1,6 @@
 import type { TimelineConfig } from './types';
 import { parseMs } from './parse-ms';
+import { CALL_BAR_RATIOS } from './call-waveform';
 
 // Typewriter constants, ported verbatim from the Chatbase product widget
 // (chatbase-website/src/components/integrations-page/channel-demos/sunshine/
@@ -625,11 +626,17 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       const settling = parseMs(step.settling || '0.7s');
       const morphing = parseMs(step.morphing || '0.46s');
 
-      const BARS = 7;
-      // voice-connect-dot is a 1.4s loop with an i*200ms delay, so a 1.4s
-      // `connecting` phase is exactly one sweep of the row — 7 x 200ms. Its
-      // 0%,14% / 28%,100% stops become the hold and the fade-back below.
-      const DOT_STAGGER = 200;
+      // Shared with <CallPanel> so the two cannot disagree on the count — the
+      // per-unit rules below are addressed by :nth-child.
+      const BARS = CALL_BAR_RATIOS.length;
+      // voice-connect-dot is a 1.4s loop with an i*200ms delay, so the source's
+      // 1.4s `connecting` phase is exactly one sweep of the row: 7 x 200ms.
+      // Derived rather than hardcoded to 200 so that identity holds if a demo
+      // retimes `connecting` — one sweep, whatever the phase length. (At the
+      // default this is 1400/7 = 200 exactly, so output is unchanged.) A fixed
+      // 200 would also emit out-of-order stops for a shorter phase, since a dot
+      // could then light after its own settle stop.
+      const DOT_STAGGER = connecting / BARS;
       const DOT_HOLD = Math.round(connecting * 0.14);
       const DOT_RELEASE = Math.round(connecting * 0.28);
       const SETTLE_STAGGER = 40;

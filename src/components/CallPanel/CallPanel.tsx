@@ -1,11 +1,6 @@
 import styles from './CallPanel.module.css';
 import { CallEndIcon, CallMicIcon, UserCircleIcon } from '@/icons';
-
-// Bar heights as a ratio of the tallest bar. Figma's "Sound" frame
-// (3962:21691) is 104x80 with heights [23, 40, 80, 59, 23, 59, 23]; divided by
-// 80 that is exactly the product waveform's BAR_RATIOS, so the design and the
-// shipped widget agree and this list is both at once.
-const BAR_RATIOS = [0.29, 0.5, 1.0, 0.74, 0.29, 0.74, 0.29];
+import { CALL_BAR_RATIOS } from '@/lib/call-waveform';
 
 interface CallPanelProps {
   /** Must match the `voicecall` step's id — the engine derives every child
@@ -36,13 +31,16 @@ export function CallPanel({ id, connectingLabel, talkingLabel }: CallPanelProps)
     <div className={`${styles.panel} messagesStack`}>
       <div className={styles.stage}>
         <div className={styles.orb}>
-          <div id={`${id}-dots`} className={styles.sound}>
-            {BAR_RATIOS.map((_, i) => (
+          {/* aria-hidden on both rows, matching the ported VoiceWaveform: they
+              are empty spans conveying state that the caption already states in
+              words. */}
+          <div id={`${id}-dots`} className={styles.sound} aria-hidden>
+            {CALL_BAR_RATIOS.map((_, i) => (
               <span key={i} data-dot className={styles.dot} />
             ))}
           </div>
-          <div id={`${id}-bars`} className={styles.sound}>
-            {BAR_RATIOS.map((ratio, i) => (
+          <div id={`${id}-bars`} className={styles.sound} aria-hidden>
+            {CALL_BAR_RATIOS.map((ratio, i) => (
               <span
                 key={i}
                 data-bar
