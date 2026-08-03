@@ -37,6 +37,9 @@ export default function Home() {
       <Link href="/demos/stripe" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
         Stripe
       </Link>
+      <Link href="/demos/transfer-to-human" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
+        Transfer to human
+      </Link>
 
       <h2 style={{ fontSize: 18, fontWeight: 600, marginTop: 16 }}>Integration prototypes</h2>
       <Link href="/dashboard" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
