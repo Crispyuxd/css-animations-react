@@ -30,6 +30,7 @@ import { timeline as tavily } from '../src/app/demos/tavily/timeline';
 import { timeline as shopify } from '../src/app/demos/shopify/timeline';
 import { timeline as leads } from '../src/app/demos/leads/timeline';
 import { timeline as stripe } from '../src/app/demos/stripe/timeline';
+import { timeline as transferToHuman } from '../src/app/demos/transfer-to-human/timeline';
 
 const DEMOS: Array<{ name: string; cfg: TimelineConfig }> = [
   { name: 'escalation', cfg: escalation },
@@ -43,6 +44,7 @@ const DEMOS: Array<{ name: string; cfg: TimelineConfig }> = [
   { name: 'shopify', cfg: shopify },
   { name: 'leads', cfg: leads },
   { name: 'stripe', cfg: stripe },
+  { name: 'transfer-to-human', cfg: transferToHuman },
 ];
 
 type Walker = {
@@ -211,6 +213,20 @@ function walk(cfg: TimelineConfig): Walker {
       const dur = parseMs((step as any).duration ?? '0.2s');
       w.cursor = start + dur + parseMs((step as any).pause ?? '0s');
       bump(w, start + dur);
+    } else if (step.type === 'voicecall') {
+      const connecting = parseMs((step as any).connecting ?? '1.4s');
+      const settling = parseMs((step as any).settling ?? '0.7s');
+      const morphing = parseMs((step as any).morphing ?? '0.46s');
+      // The cursor advances by the three phase lengths, but the last bar keeps
+      // moving a little past them: it starts its grow 6 * 40ms into the morph
+      // phase, grows for 420ms, then --voice-amp steps to full 1ms later. The
+      // idle oscillation from there on is ambient and never ends, so it is not
+      // counted as a visual end. Mirror of the engine's voicecall block.
+      const lastBar = 6 * 40 + 420 + 1;
+      const visualEnd = start + connecting + settling + lastBar;
+      w.events.push({ kind: 'voicecall', id: (step as any).id, start, end: visualEnd });
+      bump(w, visualEnd);
+      w.cursor = start + connecting + settling + morphing + parseMs((step as any).pause ?? '0s');
     } else if (step.type === 'transition') {
       const dur = parseMs((step as any).duration ?? '0.4s');
       const end = start + dur;

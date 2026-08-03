@@ -1,5 +1,6 @@
 import type { TimelineConfig } from './types';
 import { parseMs } from './parse-ms';
+import { CALL_BAR_RATIOS } from './call-waveform';
 
 // Typewriter constants, ported verbatim from the Chatbase product widget
 // (chatbase-website/src/components/integrations-page/channel-demos/sunshine/
@@ -608,6 +609,128 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       if (!step.parallel) {
         cursor += dur + parseMs(step.pause || '0s');
       }
+    }
+
+    else if (step.type === 'voicecall') {
+      // Voice-call choreography for <CallPanel>. Every number below is the
+      // product's, not invented here: the phase lengths are CALL_PHASES from
+      // the widget's phone-call surface, and the staggers/durations are
+      // VoiceWaveform's SETTLE_*/MORPH_* constants. Colours and geometry come
+      // from Figma "Transfer to human" (3962:21805).
+      //
+      // The source switches React renders per phase; this engine has one
+      // cycle-locked keyframe per element, so each dot and each bar gets its
+      // whole life emitted as a single keyframe. The observable result is the
+      // same, with one deliberate substitution noted at the morph below.
+      const connecting = parseMs(step.connecting || '1.4s');
+      const settling = parseMs(step.settling || '0.7s');
+      const morphing = parseMs(step.morphing || '0.46s');
+
+      // Shared with <CallPanel> so the two cannot disagree on the count — the
+      // per-unit rules below are addressed by :nth-child.
+      const BARS = CALL_BAR_RATIOS.length;
+      // voice-connect-dot is a 1.4s loop with an i*200ms delay, so the source's
+      // 1.4s `connecting` phase is exactly one sweep of the row: 7 x 200ms.
+      // Derived rather than hardcoded to 200 so that identity holds if a demo
+      // retimes `connecting` — one sweep, whatever the phase length. (At the
+      // default this is 1400/7 = 200 exactly, so output is unchanged.) A fixed
+      // 200 would also emit out-of-order stops for a shorter phase, since a dot
+      // could then light after its own settle stop.
+      const DOT_STAGGER = connecting / BARS;
+      const DOT_HOLD = Math.round(connecting * 0.14);
+      const DOT_RELEASE = Math.round(connecting * 0.28);
+      const SETTLE_STAGGER = 40;
+      const SETTLE_DUR = 520;
+      const MORPH_STAGGER = 40;
+      const MORPH_DUR = 420;
+      const CALL_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
+
+      const settleStart = cursor + connecting;
+      const morphStart = settleStart + settling;
+
+      // Every stop below uses pctP, not pct. This block is built out of 1ms
+      // hard cuts, and at pct's one decimal a 1ms gap rounds to the SAME
+      // percentage — a duplicate offset does not step, it makes the whole
+      // preceding segment ramp to the second value instead. That is what
+      // pctP already exists for.
+      //
+      // Row handoff: the dots row cuts out on the frame the bars row cuts in.
+      // A cut, not a cross-fade — the source unmounts one and mounts the
+      // other, and at that instant both rows are seven identical 8px black
+      // circles, so the swap is invisible.
+      rules.push(`@keyframes call-dots-${step.id} {
+  0%, ${pctP(morphStart)}% { opacity: 1; }
+  ${pctP(morphStart + 1)}%, 100% { opacity: 0; }
+}`);
+      rules.push(`#${step.id}-dots { animation: call-dots-${step.id} ${cycleStr} linear infinite both; will-change: opacity; }`);
+      rules.push(`@keyframes call-bars-${step.id} {
+  0%, ${pctP(morphStart)}% { opacity: 0; }
+  ${pctP(morphStart + 1)}%, 100% { opacity: 1; }
+}`);
+      rules.push(`#${step.id}-bars { animation: call-bars-${step.id} ${cycleStr} linear infinite both; will-change: opacity; }`);
+
+      for (let i = 0; i < BARS; i++) {
+        // Dot i: idle grey, hard-cut to black when the sweep reaches it, fade
+        // back to grey, then settle to black for good. The hard cut is the
+        // source's — voice-connect-dot starts AT brand with no fill-back, so
+        // the colour appears instantly and only the release interpolates.
+        const on = cursor + i * DOT_STAGGER;
+        const settleIn = settleStart + i * SETTLE_STAGGER;
+        rules.push(`@keyframes call-dot-${step.id}-${i} {
+  0%, ${pctP(on)}% { background-color: var(--call-dot-idle); }
+  ${pctP(on + 1)}%, ${pctP(on + DOT_HOLD)}% { background-color: var(--call-dot-live); }
+  ${pctP(on + DOT_RELEASE)}%, ${pctP(settleIn)}% { background-color: var(--call-dot-idle); animation-timing-function: ${CALL_EASE}; }
+  ${pctP(settleIn + SETTLE_DUR * 0.55)}% { background-color: color-mix(in srgb, var(--call-dot-live) 45%, var(--call-dot-idle)); }
+  ${pctP(settleIn + SETTLE_DUR)}%, 100% { background-color: var(--call-dot-live); }
+}`);
+        rules.push(`#${step.id}-dots [data-dot]:nth-child(${i + 1}) { animation: call-dot-${step.id}-${i} ${cycleStr} linear infinite both; will-change: background-color; }`);
+
+        // Bar i: holds at dot size, grows on its stagger, then hands off to the
+        // ambient `voice-bar` oscillation at FULL amplitude.
+        //
+        // --voice-amp steps 0 -> 1, it does not ramp. The source carries a
+        // `transition: --voice-amp` that reads like a 660ms ease-in, but that
+        // transition is inert (--voice-amp is not registered there), so what
+        // actually ships snaps to full amplitude the moment the morph ends.
+        // Copy the shipped behaviour: a ramp leaves the wave nearly flat for
+        // over a second, which on a looping demo is most of its time on screen.
+        //
+        // SUBSTITUTION: the source grows an UNCLIPPED bar 4% -> ratio*22%,
+        // because during `morphing` voice-bar-grow occupies its single
+        // animation slot and no clip-path applies. Here voice-bar rides along
+        // in the same declaration and never stops, so the bar is clipped
+        // throughout and the grow is expressed in box height instead:
+        // amp 0 pins the clip at a constant inset(22.5%), i.e. 55% of the box,
+        // so growing the box to ratio*40% shows ratio*22% — the source's exact
+        // end state — and starting at 7.2727% (8px / 0.55 of the 200px orb)
+        // shows the 8px circle the dot handed over. Same pixels, one animation.
+        const morphIn = morphStart + i * MORPH_STAGGER;
+        rules.push(`@keyframes call-bar-${step.id}-${i} {
+  0%, ${pctP(morphIn)}% { height: 7.2727%; --voice-amp: 0; animation-timing-function: ${CALL_EASE}; }
+  ${pctP(morphIn + MORPH_DUR)}% { height: calc(var(--bar-ratio) * 40%); --voice-amp: 0; }
+  ${pctP(morphIn + MORPH_DUR + 1)}%, 100% { height: calc(var(--bar-ratio) * 40%); --voice-amp: 1; }
+}`);
+        // Both animations must live in ONE declaration: this selector outranks
+        // CallPanel.module.css, so a separate rule there would be overridden
+        // rather than merged, and the waveform would never oscillate.
+        rules.push(`#${step.id}-bars [data-bar]:nth-child(${i + 1}) { animation: call-bar-${step.id}-${i} ${cycleStr} linear infinite both, voice-bar 1.6s linear ${(-i * 0.23).toFixed(2)}s infinite; will-change: height, clip-path; }`);
+      }
+
+      // Caption: "Calling customer support..." fades out across `settling` as
+      // "Talking to Alex James" fades in. Opacity only — the two sit in the
+      // same 20px slot, so any translate would read as drift.
+      rules.push(`@keyframes call-cap-out-${step.id} {
+  0%, ${pctP(settleStart)}% { opacity: 1; }
+  ${pctP(morphStart)}%, 100% { opacity: 0; }
+}`);
+      rules.push(`#${step.id}-cap-connecting { animation: call-cap-out-${step.id} ${cycleStr} linear infinite both; will-change: opacity; }`);
+      rules.push(`@keyframes call-cap-in-${step.id} {
+  0%, ${pctP(settleStart)}% { opacity: 0; }
+  ${pctP(morphStart)}%, 100% { opacity: 1; }
+}`);
+      rules.push(`#${step.id}-cap-talking { animation: call-cap-in-${step.id} ${cycleStr} linear infinite both; will-change: opacity; }`);
+
+      cursor += connecting + settling + morphing + parseMs(step.pause || '0s');
     }
   }
 
