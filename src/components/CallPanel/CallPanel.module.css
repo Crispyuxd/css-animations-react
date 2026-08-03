@@ -1,0 +1,131 @@
+/* Transfer-to-human call surface. Every value is from Figma
+   "Transfer to human" (3962:21805): panel 406x668 = the card minus its 64px
+   header, stage 552, controls 116.
+
+   Animated properties are deliberately absent here — the `voicecall` step
+   owns dot colour, bar height and caption opacity, and its selectors outrank
+   this file. What lives here is geometry plus the rest state each element
+   holds when no timeline is mounted. */
+
+.panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  /* Figma: SPACE_BETWEEN, so the stage takes the slack and the controls pin
+     to the bottom. */
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-card);
+}
+
+.stage {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.orb {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #fff 100%);
+  /* Figma stroke: black 4% at weight 4. An inset shadow rather than a border
+     so the orb stays exactly 200x200 and the gradient isn't inset by it. */
+  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+/* Both rows fill the orb and overlap, so the dots and the bars occupy the
+   same 104px band (7 units + 6 gaps at 8px). Percentage heights on the bars
+   resolve against this box, which is a definite 200px. */
+.sound {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  /* The engine fades the right row in; starting at 0 keeps both rows off
+     screen for the frames before the generated stylesheet is attached. */
+  opacity: 0;
+}
+
+.dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--call-dot-idle);
+}
+
+.bar {
+  flex: none;
+  width: 8px;
+  border-radius: 9999px;
+  background: var(--call-dot-live);
+  /* Rest height. 40% of the 200px orb x --bar-ratio reproduces Figma's
+     [23, 40, 80, 59, 23, 59, 23] exactly; `voice-bar` then clips it to 55%
+     of that and oscillates back out to full. */
+  height: calc(var(--bar-ratio) * 40%);
+}
+
+/* Fixed slot: the captions are absolutely stacked so cross-fading them can't
+   move the orb, and so the wider one doesn't set the layout for both. */
+.captions {
+  position: relative;
+  width: 100%;
+  height: 20px;
+}
+
+.caption {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.28px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  opacity: 0;
+  /* Figma names Geist here while the bot text and placeholder in the same
+     frame name Inter. The shipped widget resolves that inconsistency to Inter
+     (phone-call-surface.module.css sets var(--font-inter) and these exact
+     metrics), so this inherits the app font instead of pulling in a second
+     family for one line. */
+}
+
+.controls {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+}
+
+.control {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-card);
+  /* Figma stroke: black 4% at weight 2, inset for the same reason as the orb. */
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.end {
+  background: var(--bg-danger);
+}

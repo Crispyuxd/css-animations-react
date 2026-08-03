@@ -9,6 +9,7 @@ export { ThinkingTrace } from './ThinkingTrace/ThinkingTrace';
 export { ConnectedDivider } from './ConnectedDivider/ConnectedDivider';
 export { CalendarWidget } from './CalendarWidget/CalendarWidget';
 export { CallBooked } from './CallBooked/CallBooked';
+export { CallPanel } from './CallPanel/CallPanel';
 export { DemoCursor } from './DemoCursor/DemoCursor';
 export { CategoriesWidget } from './CategoriesWidget/CategoriesWidget';
 export { CartWidget } from './CartWidget/CartWidget';
