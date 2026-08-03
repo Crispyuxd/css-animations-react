@@ -13,6 +13,13 @@
   --text-inverse: #ffffff;
   --divider: rgba(0, 0, 0, 0.08);
   --connected-line: rgba(0, 0, 0, 0.04);
+  /* Voice-call "Sound" row — Figma 3962:21771 / 3962:21691. Same hex as
+     --border-subtle, kept separate because it's a waveform ink, not a border:
+     the idle connect dot, and the ink every dot and bar settles to. */
+  --call-dot-idle: #e4e4e7;
+  --call-dot-live: #000000;
+  /* End-call control fill — Figma 3959:120956 */
+  --bg-danger: #dc2626;
 
   --radius-card: 20px;
   --radius-bubble: 20px;
@@ -66,6 +73,66 @@ body {
 @keyframes sparklePulse {
   0%, 100% { transform: scale(1); opacity: 0.7; }
   50% { transform: scale(1.22); opacity: 1; }
+}
+
+/* ── Voice-call waveform ──────────────────────────────────────────────────
+   Ported from the product widget's voice mode via chatbase-website's
+   src/components/ui/voice-waveform.tsx. Bars are sized as a % of the parent
+   orb; --bar-ratio is per-bar (set inline by CallPanel) and --voice-amp gates
+   the oscillation amplitude.
+
+   Global on purpose: a CSS Module would hash `voice-bar` out from under the
+   engine, which names it in the generated animation declaration.
+
+   --voice-amp is used as a 0/1 switch, not a ramp: 0 while a bar is growing
+   out of its connect dot (which pins the clip at a constant inset, so the grow
+   reads as a clean grow) and 1 for the idle oscillation. The source appears to
+   ease it in over 660ms, but that `transition: --voice-amp` is inert there
+   because the property is not registered, so what ships snaps to full
+   amplitude on morph exit. This matches the shipped behaviour.
+
+   It is registered anyway, and must stay registered: the switch has to be a
+   well-defined <number>, and if --voice-amp were ever unset the 50% calc()
+   below would be invalid at computed-value time, which drops that whole
+   keyframe step and freezes the bars mid-wave. */
+@property --voice-amp {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+@keyframes voice-bar {
+  0%,
+  100% {
+    clip-path: inset(22.5% 0 22.5% 0 round 9999px);
+  }
+  12.5%,
+  87.5% {
+    clip-path: inset(
+      calc(22.5% * (1 - var(--voice-amp) * 0.146)) 0
+        calc(22.5% * (1 - var(--voice-amp) * 0.146)) 0 round 9999px
+    );
+  }
+  25%,
+  75% {
+    clip-path: inset(
+      calc(22.5% * (1 - var(--voice-amp) * 0.5)) 0
+        calc(22.5% * (1 - var(--voice-amp) * 0.5)) 0 round 9999px
+    );
+  }
+  37.5%,
+  62.5% {
+    clip-path: inset(
+      calc(22.5% * (1 - var(--voice-amp) * 0.854)) 0
+        calc(22.5% * (1 - var(--voice-amp) * 0.854)) 0 round 9999px
+    );
+  }
+  50% {
+    clip-path: inset(
+      calc(22.5% * (1 - var(--voice-amp))) 0
+        calc(22.5% * (1 - var(--voice-amp))) 0 round 9999px
+    );
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
