@@ -27,17 +27,26 @@ import type { TimelineConfig } from '@/lib/types';
 //   6796   panel morph (500) + 240 pause
 //   9356   call phases (1400 + 700 + 460)
 //   9556   last bar finishes growing; the wave is at full amplitude from here
-//   13200  stackFadeStart (cycle − outroFade − 0.9s)
+//   17050  the wave's 0.6s outro starts easing its amplitude to rest
+//   17650  wave reaches rest; stackFadeStart (cycle − outroFade − 0.9s); the exit
+//          runs — the entry mirrored over the same 450ms, same curve, same 14px,
+//          same 1px blur, nothing extra
+//   18100  stackFadeEnd — 0.9s of empty card, then the cycle wraps
 //
-// That leaves a ~3.6s tail, well above the 1.02–1.58s dwell the other demos
-// aim for, and it is deliberate: this demo's payoff is the waveform, and the
+// That leaves a ~8.1s tail, far above the 1.02–1.58s dwell the other demos aim
+// for, and it is deliberate: this demo's payoff is the waveform, and the
 // waveform is an ambient 1.6s loop rather than a step, so the audit's "dwell"
-// is really the wave's stage time. 3.6s is a bit over two full oscillations.
-// Shrinking it to the house dwell would fade the wave out about when it starts.
+// is really the wave's stage time. At 19s the call holds for 7.5s of it, about
+// 4.7 full oscillations. It was 15s, which gave the talking state only 3.0s and
+// ended the call almost as soon as it connected.
 export const timeline: TimelineConfig = {
-  cycle: '15s',
+  cycle: '19s',
   introHold: '0.54s',
-  outroFade: '0.9s',
+  // 0.45s, not the 0.9s default, so the cycle-end window is exactly as long as
+  // the surface morph's incoming half — the exit is that entrance mirrored, and
+  // a mirror that runs for twice as long is not a mirror. This is also the window
+  // the per-element exits are measured against.
+  outroFade: '0.45s',
   metaFadeIn: '0.36s',
   metaHold: '0.9s',
   metaFadeOut: '0.36s',
@@ -58,10 +67,24 @@ export const timeline: TimelineConfig = {
     // scale+blur the forms demo uses for state-form → state-success: both
     // halves meet at 0.86 with a soft blur so it reads as one surface
     // changing rather than two panels cross-fading.
-    { type: 'transition', hide: 'state-chat', show: 'state-call', duration: '0.5s', morph: true, pause: '0.24s' },
+    //
+    // `surface: true` because this swaps the entire card body, which the other
+    // five morphs in this repo do not. It buys four things the in-stack morphs
+    // get for free — a crossover the incoming half fades through instead of
+    // snapping onto, a rise plus a staggered per-element arrival so the call
+    // screen doesn't land as one flat plane, a drop-away exit at the cycle-end
+    // fade that is that same arrival mirrored, and a fade-up of state-chat at
+    // the top of the cycle so
+    // <ChatInput /> (outside .messagesStack, so outside the intro fade) doesn't
+    // pop back in a frame ahead of everything else.
+    { type: 'transition', hide: 'state-chat', show: 'state-call', duration: '0.5s', morph: true, surface: true, pause: '0.24s' },
 
     // Phase lengths omitted on purpose — the defaults ARE the product's
     // CALL_PHASES (1.4s / 0.7s / 0.46s). Only override to retime a demo.
-    { type: 'voicecall', id: 'call' },
+    //
+    // `outro` is not the product's — it's this demo being a loop. 0.6s ends
+    // exactly on stackFadeStart (17.65s), so the wave settles to rest and the
+    // exit begins on the frame it lands: no still beat, no wave cut mid-swing.
+    { type: 'voicecall', id: 'call', outro: '0.6s' },
   ],
 };
