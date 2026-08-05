@@ -219,10 +219,14 @@ function walk(cfg: TimelineConfig): Walker {
       const morphing = parseMs((step as any).morphing ?? '0.46s');
       // The cursor advances by the three phase lengths, but the last bar keeps
       // moving a little past them: it starts its grow 6 * 40ms into the morph
-      // phase, grows for 420ms, then the wave cuts in at full 1ms later. The
-      // idle oscillation from there on is ambient and never ends, so it is not
-      // counted as a visual end. Mirror of the engine's voicecall block.
-      const lastBar = 6 * 40 + 420 + 1;
+      // phase, grows for 420ms, then eases its amplitude up from the trough over
+      // the engine's WAVE_IN_MS. The idle oscillation from there on is ambient, so
+      // it is not counted as a visual end — including with an `outro`, which lands
+      // the wave on rest at exactly stackFadeStart and would otherwise read here
+      // as a 0s dwell with an overrun. Mirror of the engine's voicecall block;
+      // neither the outro nor a surface morph changes the cursor, so the numbers
+      // below still hold. Keep the 180 in step with WAVE_IN_MS.
+      const lastBar = 6 * 40 + 420 + 180;
       const visualEnd = start + connecting + settling + lastBar;
       w.events.push({ kind: 'voicecall', id: (step as any).id, start, end: visualEnd });
       bump(w, visualEnd);
