@@ -31,6 +31,7 @@ import { timeline as shopify } from '../src/app/demos/shopify/timeline';
 import { timeline as leads } from '../src/app/demos/leads/timeline';
 import { timeline as stripe } from '../src/app/demos/stripe/timeline';
 import { timeline as transferToHuman } from '../src/app/demos/transfer-to-human/timeline';
+import { timeline as collectData } from '../src/app/demos/collect-data/timeline';
 
 const DEMOS: Array<{ name: string; cfg: TimelineConfig }> = [
   { name: 'escalation', cfg: escalation },
@@ -45,6 +46,7 @@ const DEMOS: Array<{ name: string; cfg: TimelineConfig }> = [
   { name: 'leads', cfg: leads },
   { name: 'stripe', cfg: stripe },
   { name: 'transfer-to-human', cfg: transferToHuman },
+  { name: 'collect-data', cfg: collectData },
 ];
 
 type Walker = {

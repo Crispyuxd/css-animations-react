@@ -40,6 +40,9 @@ export default function Home() {
       <Link href="/demos/transfer-to-human" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
         Transfer to human
       </Link>
+      <Link href="/demos/collect-data" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
+        Collect data
+      </Link>
 
       <h2 style={{ fontSize: 18, fontWeight: 600, marginTop: 16 }}>Integration prototypes</h2>
       <Link href="/dashboard" style={{ fontSize: 16, color: '#09090b', textDecoration: 'underline' }}>
