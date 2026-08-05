@@ -81,7 +81,7 @@ export const timeline: TimelineConfig = {
 
     // user-2 turn-anchor (parallel). EVERY user message pins to the top — it's
     // the house scroll-pin rule for these flows, not a per-demo judgement call,
-    // so it applies even though the exchange would have fit unscrolled. y: -269
+    // so it applies even though the exchange would have fit unscrolled. y: -248
     // lifts bot-2 + meta-1 out of view as one block and lands user-2 at
     // padding-box y=20. The customer gives both values in one message — the
     // payoff of a no-form collector.

@@ -17,13 +17,13 @@ export default function CollectDataDemo() {
         >
           <BotMessage id="bot-1" lines={['Hey, how can I help?']} meta={<MetaRow id="meta-0" positioned={false} gap={8} />} />
 
-          {/* Single nowrap line, so the bubble hugs its text: 291 of text + 32
-              padding = 323, inside the 334 the row allows. Deliberately NOT
+          {/* Single nowrap line, so the bubble hugs its text: 286.5 of text + 32
+              padding = 319, inside the 334 the row allows. Deliberately NOT
               `wrap` — that sets max-width 305 and the bubble is then sized by
               max-content clamped to 305, leaving ~150px of dead space to the
               right of the wrapped lines instead of hugging them. */}
           <UserMessage id="user-1">
-            {'Hi, I\'d like to register my product for warranty'}
+            Hi, I&apos;d like to register my product for warranty
           </UserMessage>
 
           {/* The agent asks for the fields it was told to collect. No card, no
