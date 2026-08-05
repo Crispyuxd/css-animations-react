@@ -47,6 +47,15 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   const cycleStr = typeof config.cycle === 'number' ? `${config.cycle}ms` : config.cycle;
   const introMs = parseMs(config.introHold || '0.36s');
   const outroMs = parseMs(config.outroFade || '0.9s');
+
+  // Cycle-end fade window. stackFadeCycle at the bottom of this file owns it,
+  // but two things inside the step loop have to line up with it: a `surface`
+  // morph's exit and a `voicecall`'s outro. Computed here so all three read the
+  // same numbers instead of re-deriving them.
+  const CYCLE_TAIL_MS = 900;
+  const fadeOutStartMs = cycleMs - outroMs - CYCLE_TAIL_MS;
+  const fadeOutEndMs = cycleMs - CYCLE_TAIL_MS;
+
   const defaultMetaFadeIn = config.metaFadeIn || '0.36s';
   const defaultMetaHold = config.metaHold || '0.9s';
   const defaultMetaFadeOut = config.metaFadeOut || '0.15s';
@@ -555,8 +564,34 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       // meet at scale 0.88 with opposite tilts and a soft blur, so the eye
       // reads it as one shape transforming. Triggered only when `morph: true`
       // is set on the step (forms uses this for state-form → state-success).
-      const morphMidPct = pct(cursor + dur * 0.55);
-      const morphShowStartPct = pct(cursor + dur * 0.30);
+      //
+      // `surface: true` narrows that to a swap of the WHOLE card body
+      // (transfer-to-human's state-chat → state-call) rather than a card living
+      // inside the message stack. Three things change, and all three are gated
+      // because the five in-stack morphs (calendar, forms, leads, stripe,
+      // shopify) are approved as they stand:
+      //
+      //   1. The incoming half cannot ride var(--ease-travel). That curve is a
+      //      spring — linear(0, 0.3892, 0.921, 1.1515, …) — and linear() spaces
+      //      its stops evenly, so it is at 0.921 by 12.5% of its segment. On the
+      //      default 0.30 start that is 44ms of a 350ms fade: the surface does
+      //      not fade in, it cuts in, over a chat that is still ~30% there. A
+      //      spring on opacity always reads as a snap. Material standard is
+      //      monotone and symmetric, so opacity tracks the crossover instead.
+      //   2. The halves have to overlap properly. The incoming starts at 0.10
+      //      instead of 0.30 and the outgoing plunge lands at 0.65 instead of
+      //      0.55, so the call surface is already ~2/3 present when the chat
+      //      finishes leaving and there is no near-empty frame between them. The
+      //      outgoing curve is deliberately NOT softened: its steep ease-in is
+      //      what stops high-contrast transcript text ghosting through the orb.
+      //   3. A surface swap is the last thing on screen at the end of the cycle,
+      //      so this one step owns both the exit and the re-entry — see the
+      //      morph-out stops on `show-` and the reveal stops on `hide-` below.
+      const SURFACE_SHOW_AT = 0.10;
+      const SURFACE_HIDE_AT = 0.65;
+      const morphMidPct = pct(cursor + dur * (step.surface ? SURFACE_HIDE_AT : 0.55));
+      const morphShowStartPct = pct(cursor + dur * (step.surface ? SURFACE_SHOW_AT : 0.30));
+      const morphShowEase = step.surface ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'var(--ease-travel)';
 
       if (step.morph) {
         if (showInfo) {
@@ -568,18 +603,136 @@ export function generateTimelineCSS(config: TimelineConfig): string {
   ${endPct}%, 100% { opacity: 0; transform: scale(0.86); filter: blur(1.5px); }
 }`);
         } else {
+          // A surface morph hides the element that owns the chat input, and the
+          // input sits outside .messagesStack, so the cycle's intro fade does
+          // not cover it. Left alone this keyframe holds opacity 0 to 100% and
+          // then snaps back to 1 at 0%, popping the input bar in one frame ahead
+          // of the messages above it. Fading the surface up across introHold
+          // puts it on the same entrance as the stack. (The messages inside it
+          // then carry both fades, which over a matched window is a mild ease-in
+          // on an already-fading element — not a second visible fade.)
+          const canReveal = step.surface && introMs < cursor;
+          const hideHead = canReveal
+            ? `0% { opacity: 0; transform: scale(1); filter: blur(0); }
+  ${pct(introMs)}% { opacity: 1; transform: scale(1); filter: blur(0); }
+  ${startPct}%`
+            : `0%, ${startPct}%`;
           rules.push(`@keyframes hide-${step.hide} {
-  0%, ${startPct}% { opacity: 1; transform: scale(1); filter: blur(0); animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0); }
+  ${hideHead} { opacity: 1; transform: scale(1); filter: blur(0); animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0); }
   ${morphMidPct}% { opacity: 0; transform: scale(0.86); filter: blur(1.5px); }
   ${endPct}%, 100% { opacity: 0; transform: scale(0.86); filter: blur(1.5px); }
 }`);
           rules.push(`#${step.hide} { animation: hide-${step.hide} ${cycleStr} linear infinite both; will-change: transform, opacity, filter; }`);
         }
+        // A surface swap has nothing following it, so `show-` owns BOTH ends of
+        // its life: opacity, transform and filter, in and out, from this one
+        // keyframe. That single ownership is the point — it is the only way the
+        // exit can be the entry's mirror rather than merely resemble it.
+        //
+        // A surface must therefore NOT carry the `messagesStack` cycle-fade hook.
+        // That hook fades linearly, and on the inner panel rather than on the
+        // wrapper, so a surface wearing it gets a flat linear dim on the way out
+        // against an eased fade on the way in — two different fades on the same
+        // element, which is exactly what reads as the exit being a different move.
+        //
+        // The surface RISES in and DROPS out, so the two ends of its life read as
+        // one gesture. A shift also gives the eye something to track, which a
+        // pure opacity fade of a plain block does not — see the per-element
+        // arrival below for the other half of that. The 0.98 keeps a whisper of
+        // the morph's scale coupling with the outgoing chat (which still goes to
+        // 0.86) without competing with the shift for the read.
+        //
+        // The exit is the ENTRY MIRRORED, deliberately down to the numbers: same
+        // travel, same 0.98, same 1px blur, same curve, and via the demo's
+        // `outroFade` the same window length. It was its own gesture before —
+        // 20px, a 1.5px blur and cubic-bezier(0.4, 0, 1, 1) with no deceleration
+        // — and a harder, longer exit than the arrival it closes reads as a
+        // different move rather than the same one running backwards.
+        //
+        // Every stop in the surface path carries the same two-function transform
+        // list. Mixing `scale(1)` with `translateY(14px)` across a segment makes
+        // Chrome fall back to matrix interpolation; matching lists keep it
+        // per-component. translateY(0) is a no-op, so the non-surface path still
+        // emits a bare `scale()` exactly as before.
+        const SURFACE_SHIFT = '14px';
+        const SURFACE_SETTLE = '0.98';
+        const SURFACE_BLUR = '1px';
+        const tf = (y: string, s: string) =>
+          step.surface ? `translateY(${y}) scale(${s})` : `scale(${s})`;
+        const surfaceExit = step.surface
+          ? `
+  ${pct(fadeOutStartMs)}% { opacity: 1; transform: ${tf('0', '1')}; filter: blur(0); animation-timing-function: ${morphShowEase}; }
+  ${pct(fadeOutEndMs)}%, 100% { opacity: 0; transform: ${tf(SURFACE_SHIFT, SURFACE_SETTLE)}; filter: blur(${SURFACE_BLUR}); }`
+          : '';
+        const enterTf = step.surface ? tf(SURFACE_SHIFT, SURFACE_SETTLE) : 'scale(0.88)';
         rules.push(`@keyframes show-${step.show} {
-  0%, ${morphShowStartPct}% { opacity: 0; transform: scale(0.88); filter: blur(1px); animation-timing-function: var(--ease-travel); }
-  ${endPct}%, 100% { opacity: 1; transform: scale(1); filter: blur(0); }
+  0%, ${morphShowStartPct}% { opacity: 0; transform: ${enterTf}; filter: blur(1px); animation-timing-function: ${morphShowEase}; }
+  ${endPct}%${step.surface ? '' : ', 100%'} { opacity: 1; transform: ${tf('0', '1')}; filter: blur(0); }${surfaceExit}
 }`);
         rules.push(`#${step.show} { animation: show-${step.show} ${cycleStr} linear infinite both; will-change: transform, opacity, filter; }`);
+
+        // Per-element arrival. Fading a 668px surface as one plane reads as a
+        // jump however clean the curve is, because nothing inside it moves
+        // independently — there is no detail to follow, so the whole thing just
+        // appears. The surface carries the movement; the groups tagged
+        // [data-enter] arrive behind it on a stagger, so the card comes in and
+        // then populates.
+        //
+        // Each group rises 6px as it fades, rather than fading alone. Filled,
+        // high-contrast elements — the mic and the red end-call pill — read as
+        // popping when a bare opacity change is all that happens to them; the
+        // same reason UserMessage's entrance is carried by its transform and cuts
+        // its opacity almost immediately. A little movement makes them arrive.
+        //
+        // Timing is explicit per hook, NOT a uniform ladder, because a uniform
+        // one puts something last by construction and whatever lands last after
+        // the rest has settled is the thing that reads as popping. The controls
+        // are chrome — a mic and an end-call button that any call screen simply
+        // has — so they come in WITH the card. The caption is the content, so it
+        // lands last, and it is text, which takes a fade cleanly.
+        //
+        // Curves here are Material standard, which is NOT a gentle start: it is at
+        // ~0.54 by 37% of its duration, measurably no softer than the ease-out it
+        // replaced. Softening the curve was tried and it is not what fixes a pop —
+        // arrival ORDER is.
+        //
+        // A hook can only go on an element with no other transform or opacity
+        // animation of its own, because `#state-call [data-enter="n"]` (0,1,1,0)
+        // outranks a bare id and `animation` overrides wholesale. That rules out
+        // the orb (the voicecall step's collapse) and the two captions (their own
+        // swap) — hence the caption SLOT, not the captions.
+        // The groups leave in the mirror of the order they arrived in: whatever
+        // landed last goes first. `out` is the fraction of the cycle-end window a
+        // group takes to clear, and it is OPTIONAL — omitting it means the group
+        // has no exit of its own and simply rides the cycle fade out with the
+        // surface, which is what the chrome should do.
+        //
+        // The chrome must not opt in. Its own fade would multiply with
+        // stackFadeCycle's, and two ramps to zero over one window is a square:
+        // measured, the controls were at 0.24 when the surface had covered 8 of
+        // its 14px, so the card was visibly leaving without them. Only the
+        // caption — which arrives last, so departs first — earns an exit.
+        if (step.surface) {
+          const ENTER_SHIFT = 6;
+          const ENTER: Array<{ at: number; dur: number; out?: number }> = [
+            { at: 0.10, dur: 420 },            // 1 — controls: in with the surface, out with it too
+            { at: 0.45, dur: 300, out: 0.60 }, // 2 — caption slot: in last, out first
+          ];
+          const outWindow = fadeOutEndMs - fadeOutStartMs;
+          ENTER.forEach((e, idx) => {
+            const enterStart = cursor + dur * e.at;
+            const exit = e.out === undefined
+              ? ''
+              : `
+  ${pct(fadeOutStartMs)}% { opacity: 1; transform: translateY(0); }
+  ${pct(fadeOutStartMs + outWindow * e.out)}%, 100% { opacity: 0; transform: translateY(${ENTER_SHIFT}px); }`;
+            rules.push(`@keyframes enter-${step.show}-${idx + 1} {
+  0%, ${pct(enterStart)}% { opacity: 0; transform: translateY(${ENTER_SHIFT}px); }
+  ${pct(enterStart + e.dur)}%${exit ? '' : ', 100%'} { opacity: 1; transform: translateY(0); }${exit}
+}`);
+            rules.push(`#${step.show} [data-enter="${idx + 1}"] { animation: enter-${step.show}-${idx + 1} ${cycleStr} cubic-bezier(0.4, 0, 0.2, 1) infinite both; will-change: opacity, transform; }`);
+          });
+        }
       } else {
         // Legacy plain cross-fade
         if (showInfo) {
@@ -672,13 +825,54 @@ export function generateTimelineCSS(config: TimelineConfig): string {
       // Interpolated, not snapped to the grid: a bar's wave starts 1ms after
       // its own grow, which is mid-segment, and it has to pick the triangle up
       // exactly where it already is or the shape kinks on the first stop.
-      const waveClip = (t: number) => {
+      //
+      // `ampF` scales the swing towards WAVE_INSETS[0], which IS rest, so
+      // ampF 1 is the identity and ampF 0 is a still bar. It exists for the
+      // outro below; the ampF === 1 short-circuit keeps an outro-less demo
+      // emitting byte-identical insets rather than round-tripping them through
+      // a float subtraction.
+      const waveClip = (t: number, ampF = 1) => {
         const k = ((t % WAVE_PERIOD) + WAVE_PERIOD) % WAVE_PERIOD / WAVE_STEP;
         const i0 = Math.floor(k);
         const a = WAVE_INSETS[i0];
         const b = WAVE_INSETS[(i0 + 1) % WAVE_INSETS.length];
-        return clipAt(Number((a + (b - a) * (k - i0)).toFixed(3)));
+        const raw = a + (b - a) * (k - i0);
+        const damped = ampF === 1 ? raw : WAVE_INSETS[0] - (WAVE_INSETS[0] - raw) * ampF;
+        return clipAt(Number(damped.toFixed(3)));
       };
+
+      // Looping-demo outro. There is nothing to port here: the product's call
+      // surface runs its waveform until the user hangs up, so on a loop the wave
+      // is simply oscillating at full amplitude when the cycle-end fade takes
+      // it, and the demo reads as cut off rather than finished. `outro` eases the
+      // amplitude to rest over the window that ENDS at the fade start, so the
+      // wave settles and the surface then morphs away from a still row. Opt-in:
+      // omit it and the raw product behaviour is unchanged.
+      //
+      // Half-cosine rather than linear — flat at both ends, so the amplitude
+      // neither kinks when the damping starts nor lands hard on rest. Wall-clock
+      // t, not the bar's local phase, so all seven settle together, each from
+      // wherever its own phase has it.
+      const outro = parseMs(step.outro || 0);
+      const outroStart = fadeOutStartMs - outro;
+      const amp = (t: number) => {
+        if (outro <= 0 || t <= outroStart) return 1;
+        if (t >= fadeOutStartMs) return 0;
+        return 0.5 * (1 + Math.cos(Math.PI * ((t - outroStart) / outro)));
+      };
+
+      // No orb collapse here. There WAS one — the orb contracting to 0.86 as the
+      // surface left, as the visible "call ended" beat. It came out because the
+      // surface exit is the entrance mirrored, and the entrance has no orb
+      // movement to mirror: anything extra on the way out is, by definition, the
+      // exit being a different gesture. The hang-up now reads from the direction
+      // alone — the surface rises in and drops out.
+      //
+      // If it comes back, it belongs on `#${step.id}-orb`, gated on `outro`, and
+      // spanning fadeOutStartMs -> fadeOutEndMs so it resolves with the surface
+      // instead of ahead of it. Note the orb cannot also carry a `data-enter`
+      // hook: that selector outranks a bare id and `animation` overrides
+      // wholesale, so the hook silently replaces the collapse.
 
       const settleStart = cursor + connecting;
       const morphStart = settleStart + settling;
@@ -734,48 +928,91 @@ export function generateTimelineCSS(config: TimelineConfig): string {
         // state — and starting at 7.2727% (8px / 0.55 of the 200px orb) shows
         // the 8px circle the dot handed over. Same pixels, one animation.
         //
-        // The wave then hard-cuts in 1ms after the grow rather than ramping.
-        // That is the shipped behaviour: the source carries a
-        // `transition: --voice-amp` that reads like a 660ms ease-in, but the
-        // transition is inert there (--voice-amp is not registered), so
-        // amplitude snaps. A ramp would leave the wave nearly flat for over a
-        // second, which on a looping demo is most of its time on screen.
+        // The wave used to hard-cut in 1ms after the grow, on the grounds that
+        // the source's `transition: --voice-amp` is inert (--voice-amp is not
+        // registered there) so amplitude snaps in the shipped widget. It does —
+        // but the phase the cut lands on is arbitrary, so the bar finishes a
+        // smooth 420ms grow, sits at the trough, then jumps straight to a
+        // mid-wave height. That jump is what reads as the wave sticking before it
+        // starts moving.
+        //
+        // So: amplitude eases up from the trough over WAVE_IN_MS instead. NOT the
+        // source's 660ms — that was tried and it leaves the wave nearly flat for
+        // most of its time on screen. 180ms is ~11% of one period, so the swing
+        // is at full size almost immediately; it only removes the discontinuity.
+        // Starting at the bar's own morphEnd means each bar picks up motion as it
+        // finishes growing, 40ms apart, so the wave builds along the row.
+        const WAVE_IN_MS = 180;
+        const WAVE_IN_STEP = 45;
         const morphIn = morphStart + i * MORPH_STAGGER;
         const morphEnd = morphIn + MORPH_DUR;
         const full = 'calc(var(--bar-ratio) * 40%)';
         // Wall-clock -> this bar's position in the wave. Ahead, not behind:
         // the source's delay is negative.
         const local = (t: number) => t + i * WAVE_STAGGER;
+        // Half-cosine, same shape as the outro: flat at both ends, so it leaves
+        // the trough without a kink and reaches full swing without a snap. The
+        // outro's damp is the ceiling, which only matters if a demo ever set an
+        // outro long enough to overlap the ramp.
+        const ampAt = (t: number) => {
+          const rampIn =
+            t <= morphEnd ? 0
+            : t >= morphEnd + WAVE_IN_MS ? 1
+            : 0.5 * (1 - Math.cos(Math.PI * ((t - morphEnd) / WAVE_IN_MS)));
+          return Math.min(rampIn, amp(t));
+        };
         const bar = [
           `0%, ${pctP(morphIn)}% { height: 7.2727%; clip-path: ${WAVE_REST}; animation-timing-function: ${CALL_EASE}; }`,
           `${pctP(morphEnd)}% { height: ${full}; clip-path: ${WAVE_REST}; }`,
-          `${pctP(morphEnd + 1)}% { height: ${full}; clip-path: ${waveClip(local(morphEnd + 1))}; }`,
         ];
-        // Then one stop per 200ms on this bar's own grid — strictly after the
-        // cut-in, so no two stops can round to the same pctP and flatten the
-        // segment between them.
-        const firstGrid =
-          (Math.floor(local(morphEnd + 1) / WAVE_STEP) + 1) * WAVE_STEP - i * WAVE_STAGGER;
-        for (let t = firstGrid; t < cycleMs; t += WAVE_STEP) {
-          bar.push(`${pctP(t)}% { clip-path: ${waveClip(local(t))}; }`);
+        // The ramp is sampled finer than the 200ms wave grid — at 200ms a 180ms
+        // ease-in would get one stop and interpolate straight through it.
+        for (let t = morphEnd + WAVE_IN_STEP; t < morphEnd + WAVE_IN_MS; t += WAVE_IN_STEP) {
+          bar.push(`${pctP(t)}% { clip-path: ${waveClip(local(t), ampAt(t))}; }`);
         }
-        // The cycle wraps back to WAVE_REST, which is a jump — but the panel is
-        // already faded out by then, so it is never seen.
-        bar.push(`100% { clip-path: ${waveClip(local(cycleMs))}; }`);
+        // Then one stop per 200ms on this bar's own grid, starting at the first
+        // grid point after the ramp, so no two stops can round to the same pctP
+        // and flatten the segment between them.
+        const firstGrid =
+          (Math.floor(local(morphEnd + WAVE_IN_MS) / WAVE_STEP) + 1) * WAVE_STEP - i * WAVE_STAGGER;
+        for (let t = firstGrid; t < cycleMs; t += WAVE_STEP) {
+          bar.push(`${pctP(t)}% { clip-path: ${waveClip(local(t), ampAt(t))}; }`);
+          // Past the fade start every stop is rest, so stop emitting them and
+          // let the 100% stop below hold it. Purely to keep ~8 identical stops
+          // per bar out of the sheet — the held value is the same either way.
+          if (outro > 0 && t >= fadeOutStartMs) break;
+        }
+        // With an outro the wrap is seamless: amp is 0 from the fade start on, so
+        // 100% already sits at WAVE_REST. Without one this is a jump back to
+        // rest, unseen because the panel is faded out by then.
+        bar.push(`100% { clip-path: ${waveClip(local(cycleMs), ampAt(cycleMs))}; }`);
         rules.push(`@keyframes call-bar-${step.id}-${i} {\n  ${bar.join('\n  ')}\n}`);
         rules.push(`#${step.id}-bars [data-bar]:nth-child(${i + 1}) { animation: call-bar-${step.id}-${i} ${cycleStr} linear infinite both; will-change: height, clip-path; }`);
       }
 
-      // Caption: "Calling customer support..." fades out across `settling` as
-      // "Talking to Alex James" fades in. Opacity only — the two sit in the
-      // same 20px slot, so any translate would read as drift.
+      // Caption: "Calling customer support..." leaves and "Talking to Alex
+      // James" arrives. Opacity only — the two sit in the same 20px slot, so any
+      // translate would read as drift.
+      //
+      // SEQUENTIAL, not a cross-fade. Both captions are absolutely stacked in
+      // that one slot, centred, and different widths (the talking line carries a
+      // UserCircleIcon), so running both across the same settleStart → morphStart
+      // window puts two centred strings on top of each other for the whole 700ms
+      // and the slot reads as garbled text. Out over the first 40%, an empty beat
+      // of 20%, then in over the last 40%: nothing ever overlaps anything.
+      //
+      // This is also closer to the source than the cross-fade was — the widget
+      // switches renders per phase, so it unmounts one caption and mounts the
+      // other with no shared frame at all.
+      const capOutEnd = settleStart + Math.round(settling * 0.40);
+      const capInStart = settleStart + Math.round(settling * 0.60);
       rules.push(`@keyframes call-cap-out-${step.id} {
   0%, ${pctP(settleStart)}% { opacity: 1; }
-  ${pctP(morphStart)}%, 100% { opacity: 0; }
+  ${pctP(capOutEnd)}%, 100% { opacity: 0; }
 }`);
       rules.push(`#${step.id}-cap-connecting { animation: call-cap-out-${step.id} ${cycleStr} linear infinite both; will-change: opacity; }`);
       rules.push(`@keyframes call-cap-in-${step.id} {
-  0%, ${pctP(settleStart)}% { opacity: 0; }
+  0%, ${pctP(capInStart)}% { opacity: 0; }
   ${pctP(morphStart)}%, 100% { opacity: 1; }
 }`);
       rules.push(`#${step.id}-cap-talking { animation: call-cap-in-${step.id} ${cycleStr} linear infinite both; will-change: opacity; }`);
@@ -896,8 +1133,8 @@ export function generateTimelineCSS(config: TimelineConfig): string {
 
   // stackFadeCycle
   const fadeInEnd = pct(introMs);
-  const fadeOutStart = pct(cycleMs - outroMs - parseMs('0.9s'));
-  const fadeOutEnd = pct(cycleMs - parseMs('0.9s'));
+  const fadeOutStart = pct(fadeOutStartMs);
+  const fadeOutEnd = pct(fadeOutEndMs);
   rules.push(`@keyframes stackFadeCycle {
   0% { opacity: 0; }
   ${fadeInEnd}% { opacity: 1; }
